@@ -3,10 +3,10 @@ import * as THREE from "three";
 const CURVE_COUNT = 130;
 const POINTS_PER_CURVE = 55;
 const TUBE_SEGMENTS = 50;
-const TUBE_RADIAL_SEGMENTS = 6;
+const CIRCLE_SEGMENTS = 24;
 const SPREAD = 80;
 const SNAP_THRESHOLD = 10;
-const MAX_SNAP_DISTANCE = 4;
+const MAX_SNAP_DISTANCE = 2;
 const MIN_SEGMENT_LENGTH = 2;
 const GENERATE_AHEAD = 20;
 const REMOVE_BEHIND = 30;
@@ -51,15 +51,20 @@ export default class MyceliumWorld {
 
 			uniforms: {
 				time: { value: 0 },
+				uCameraPos: { value: new THREE.Vector3() },
 			},
 
 			vertexShader: `
         attribute float aAlong;
         varying float vAlong;
         varying float vDepth;
+        varying vec3 vWorldPosition;
 
         void main() {
           vAlong = aAlong;
+          
+          vec4 worldPos = modelMatrix * vec4(position, 1.0);
+          vWorldPosition = worldPos.xyz;
           
           vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
           vDepth = -mvPosition.z;
@@ -70,11 +75,17 @@ export default class MyceliumWorld {
 
 			fragmentShader: `
         uniform float time;
+        uniform vec3 uCameraPos;
 
         varying float vAlong;
         varying float vDepth;
+        varying vec3 vWorldPosition;
 
         void main() {
+          float dist = length(vWorldPosition - uCameraPos);
+          float maskRadius = 6.0;
+          if (dist < maskRadius) discard;
+          
           float repeat = 2.0;
           float speed = 0.4;
           
@@ -112,6 +123,22 @@ export default class MyceliumWorld {
 		this.animate();
 	}
 
+	constrainToHorizontal(dir) {
+		const minZ = 0.173;
+		const len = dir.length();
+		const z = dir.z;
+		const zRatio = Math.abs(z) / len;
+		if (zRatio < minZ) {
+			const scale = minZ * len / Math.abs(z);
+			dir.x *= scale;
+			dir.y *= scale;
+			if (z < 0) dir.z = -minZ * len;
+			else dir.z = minZ * len;
+		}
+		dir.normalize();
+		return dir;
+	}
+
 	createCurve(snapPoints = []) {
 		const points = [];
 		const center = new THREE.Vector3(0, 0, 0);
@@ -125,14 +152,14 @@ export default class MyceliumWorld {
 			}
 		}
 
-		let dir = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+		let dir = this.constrainToHorizontal(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5));
 
 		for (let i = 0; i < POINTS_PER_CURVE; i++) {
-			dir.lerp(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(), 0.2).normalize();
+			dir = this.constrainToHorizontal(dir.lerp(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(), 0.2));
 
 			pos.lerp(center, 0.01);
 
-			const nextPos = pos.clone().add(dir.multiplyScalar(2));
+			let nextPos = pos.clone().add(dir.multiplyScalar(2.5));
 
 			if (snapPoints.length > 0 && i > 0 && i < POINTS_PER_CURVE - 1) {
 				const checkPoint = pos.clone().lerp(nextPos, 0.5);
@@ -145,6 +172,13 @@ export default class MyceliumWorld {
 							nextPos.copy(snappedMid);
 						}
 					}
+				}
+			}
+
+			if (points.length > 0) {
+				const prevPoint = points[points.length - 1];
+				if (nextPos.distanceTo(prevPoint) < 1.5) {
+					nextPos = prevPoint.clone().add(nextPos.clone().sub(prevPoint).normalize().multiplyScalar(1.5));
 				}
 			}
 
@@ -176,6 +210,64 @@ export default class MyceliumWorld {
 		return { curve, startPoint, mid25, mid50, mid75, endPoint };
 	}
 
+	createSolidTubeGeometry(curve, radius, reverseDirection) {
+		const vertices = [];
+		const indices = [];
+		const along = [];
+
+		const curvePoints = [];
+		for (let i = 0; i <= TUBE_SEGMENTS; i++) {
+			curvePoints.push(curve.getPointAt(i / TUBE_SEGMENTS));
+		}
+
+		for (let step = 0; step <= TUBE_SEGMENTS; step++) {
+			const centerPos = curvePoints[step];
+			let alongValue = step / TUBE_SEGMENTS;
+			if (reverseDirection) alongValue = 1.0 - alongValue;
+
+			vertices.push(centerPos.x, centerPos.y, centerPos.z);
+			along.push(alongValue);
+
+			const stepStartIdx = step * (CIRCLE_SEGMENTS + 1);
+
+			for (let c = 0; c < CIRCLE_SEGMENTS; c++) {
+				const angle = (c / CIRCLE_SEGMENTS) * Math.PI * 2;
+				const x = centerPos.x + Math.cos(angle) * radius;
+				const y = centerPos.y + Math.sin(angle) * radius;
+				const z = centerPos.z;
+
+				vertices.push(x, y, z);
+				along.push(alongValue);
+
+				if (step < TUBE_SEGMENTS) {
+					const currOuter = stepStartIdx + 1 + c;
+					const nextOuter = (step + 1) * (CIRCLE_SEGMENTS + 1) + 1 + c;
+					const nextOuterNext = (step + 1) * (CIRCLE_SEGMENTS + 1) + 1 + ((c + 1) % CIRCLE_SEGMENTS);
+
+					indices.push(stepStartIdx + 1 + c, nextOuter, stepStartIdx + 1 + ((c + 1) % CIRCLE_SEGMENTS));
+					indices.push(nextOuter, nextOuterNext, stepStartIdx + 1 + ((c + 1) % CIRCLE_SEGMENTS));
+				}
+			}
+		}
+
+		const startCenterIdx = 0;
+		for (let c = 0; c < CIRCLE_SEGMENTS; c++) {
+			indices.push(startCenterIdx, startCenterIdx + 1 + ((c + 1) % CIRCLE_SEGMENTS), startCenterIdx + 1 + c);
+		}
+
+		const endCenterIdx = TUBE_SEGMENTS * (CIRCLE_SEGMENTS + 1);
+		for (let c = 0; c < CIRCLE_SEGMENTS; c++) {
+			indices.push(endCenterIdx, endCenterIdx + 1 + c, endCenterIdx + 1 + ((c + 1) % CIRCLE_SEGMENTS));
+		}
+
+		const geometry = new THREE.BufferGeometry();
+		geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+		geometry.setAttribute("aAlong", new THREE.Float32BufferAttribute(along, 1));
+		geometry.setIndex(indices);
+
+		return geometry;
+	}
+
 	findNearestSnapPoint(pos, snapPoints) {
 		let nearest = null;
 		let nearestDist = SNAP_THRESHOLD;
@@ -196,24 +288,8 @@ export default class MyceliumWorld {
 			const { curve, startPoint, mid25, mid50, mid75, endPoint } = this.createCurve(this.snapPoints);
 
 			const radius = 0.7 + Math.sin(i * 0.3) * 0.1;
-
-			const geometry = new THREE.TubeGeometry(curve, TUBE_SEGMENTS, radius, TUBE_RADIAL_SEGMENTS, false);
-
-			const count = geometry.attributes.position.count;
-			const along = new Float32Array(count);
-			const ringSize = TUBE_RADIAL_SEGMENTS + 1;
 			const reverseDirection = endPoint.z < startPoint.z;
-
-			for (let t = 0; t < TUBE_SEGMENTS + 1; t++) {
-				let value = t / TUBE_SEGMENTS;
-				if (reverseDirection) value = 1.0 - value;
-				for (let r = 0; r < ringSize; r++) {
-					const index = t * ringSize + r;
-					along[index] = value;
-				}
-			}
-
-			geometry.setAttribute("aAlong", new THREE.BufferAttribute(along, 1));
+			const geometry = this.createSolidTubeGeometry(curve, radius, reverseDirection);
 
 			const mesh = new THREE.Mesh(geometry, this.connectionMaterial.clone());
 
@@ -237,24 +313,8 @@ export default class MyceliumWorld {
 			const { curve, startPoint, mid25, mid50, mid75, endPoint } = this.createCurveAtZ(bufferZ + zOffset);
 
 			const radius = 0.7 + Math.random() * 0.2;
-
-			const geometry = new THREE.TubeGeometry(curve, TUBE_SEGMENTS, radius, TUBE_RADIAL_SEGMENTS, false);
-
-			const count = geometry.attributes.position.count;
-			const along = new Float32Array(count);
-			const ringSize = TUBE_RADIAL_SEGMENTS + 1;
 			const reverseDirection = endPoint.z < startPoint.z;
-
-			for (let t = 0; t < TUBE_SEGMENTS + 1; t++) {
-				let value = t / TUBE_SEGMENTS;
-				if (reverseDirection) value = 1.0 - value;
-				for (let r = 0; r < ringSize; r++) {
-					const index = t * ringSize + r;
-					along[index] = value;
-				}
-			}
-
-			geometry.setAttribute("aAlong", new THREE.BufferAttribute(along, 1));
+			const geometry = this.createSolidTubeGeometry(curve, radius, reverseDirection);
 
 			const mesh = new THREE.Mesh(geometry, this.connectionMaterial.clone());
 
@@ -294,24 +354,8 @@ export default class MyceliumWorld {
 			const { curve, startPoint, mid25, mid50, mid75, endPoint } = this.createCurveAtZ(this.lastGeneratedZ + zOffset);
 
 			const radius = 0.7 + Math.random() * 0.2;
-
-			const geometry = new THREE.TubeGeometry(curve, TUBE_SEGMENTS, radius, TUBE_RADIAL_SEGMENTS, false);
-
-			const count = geometry.attributes.position.count;
-			const along = new Float32Array(count);
-			const ringSize = TUBE_RADIAL_SEGMENTS + 1;
 			const reverseDirection = endPoint.z < startPoint.z;
-
-			for (let t = 0; t < TUBE_SEGMENTS + 1; t++) {
-				let value = t / TUBE_SEGMENTS;
-				if (reverseDirection) value = 1.0 - value;
-				for (let r = 0; r < ringSize; r++) {
-					const index = t * ringSize + r;
-					along[index] = value;
-				}
-			}
-
-			geometry.setAttribute("aAlong", new THREE.BufferAttribute(along, 1));
+			const geometry = this.createSolidTubeGeometry(curve, radius, reverseDirection);
 
 			const mesh = new THREE.Mesh(geometry, this.connectionMaterial.clone());
 
@@ -345,14 +389,14 @@ export default class MyceliumWorld {
 			}
 		}
 
-		let dir = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+		let dir = this.constrainToHorizontal(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5));
 
 		for (let i = 0; i < POINTS_PER_CURVE; i++) {
-			dir.lerp(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(), 0.2).normalize();
+			dir = this.constrainToHorizontal(dir.lerp(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(), 0.2));
 
 			pos.lerp(center, 0.01);
 
-			const nextPos = pos.clone().add(dir.multiplyScalar(2));
+			let nextPos = pos.clone().add(dir.multiplyScalar(2.5));
 
 			if (this.snapPoints.length > 0 && i > 0 && i < POINTS_PER_CURVE - 1) {
 				const checkPoint = pos.clone().lerp(nextPos, 0.5);
@@ -365,6 +409,13 @@ export default class MyceliumWorld {
 							nextPos.copy(snappedMid);
 						}
 					}
+				}
+			}
+
+			if (points.length > 0) {
+				const prevPoint = points[points.length - 1];
+				if (nextPos.distanceTo(prevPoint) < 1.5) {
+					nextPos = prevPoint.clone().add(nextPos.clone().sub(prevPoint).normalize().multiplyScalar(1.5));
 				}
 			}
 
@@ -419,9 +470,12 @@ export default class MyceliumWorld {
 	updateShaders() {
 		this.time += 0.016;
 
+		const camPos = this.camera.position;
+
 		this.tubes.forEach((mesh) => {
 			if (mesh && mesh.material) {
 				mesh.material.uniforms.time.value = this.time;
+				mesh.material.uniforms.uCameraPos.value.copy(camPos);
 			}
 		});
 	}
