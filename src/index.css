@@ -1,0 +1,82 @@
+body {
+  margin: 0;
+  background: #050403;
+  color: #eaeaea;
+  font-family: sans-serif;
+  overflow: hidden;
+}
+
+.app {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+  overflow: hidden;
+}
+
+.app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.04), transparent 60%);
+  pointer-events: none;
+}
+
+/* Dialogue centered in upper/middle area */
+.story-container {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  max-width: 700px;
+  text-align: center;
+  line-height: 1.6;
+  z-index: 10;
+}
+
+/* Choices fixed bottom */
+.choices-container {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  max-width: 600px;
+  z-index: 10;
+}
+
+/* 2x2 Grid for choices */
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  justify-items: center;
+  align-items: center;
+}
+
+.choices-grid button {
+  width: 100%;
+  padding: 14px;
+  background: #1c1c1c;
+  border: 1px solid #444;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.choices-grid button:hover {
+  background: #2a2a2a;
+  transform: scale(1.02);
+}
+
+/* Dialogue box styling with smooth transitions */
+.dialogue-box {
+  transition: filter 0.8s ease;
+}
+
+/* Dialogue box text styling */
+.dialogue-box p {
+  margin: 8px 0;
+  font-size: 18px;
+}
