@@ -1,11 +1,13 @@
 import * as THREE from "three";
 
-const CURVE_COUNT = 85;
+const CURVE_COUNT = 130;
 const POINTS_PER_CURVE = 55;
 const TUBE_SEGMENTS = 50;
 const TUBE_RADIAL_SEGMENTS = 6;
-const SPREAD = 100;
+const SPREAD = 80;
 const SNAP_THRESHOLD = 10;
+const MAX_SNAP_DISTANCE = 4;
+const MIN_SEGMENT_LENGTH = 2;
 
 export default class MyceliumWorld {
 	constructor(container, getState) {
@@ -108,11 +110,11 @@ export default class MyceliumWorld {
 		const points = [];
 		const center = new THREE.Vector3(0, 0, 0);
 
-		let pos = new THREE.Vector3((Math.random() - 0.5) * SPREAD, (Math.random() - 0.5) * SPREAD, -20 + Math.random() * 80);
+		let pos = new THREE.Vector3((Math.random() - 0.5) * SPREAD, (Math.random() - 0.5) * SPREAD, 30 + Math.random() * 50);
 
 		if (snapPoints.length > 0) {
 			const snappedStart = this.findNearestSnapPoint(pos, snapPoints);
-			if (snappedStart) {
+			if (snappedStart && pos.distanceTo(snappedStart) <= MAX_SNAP_DISTANCE) {
 				pos.copy(snappedStart);
 			}
 		}
@@ -126,11 +128,17 @@ export default class MyceliumWorld {
 
 			const nextPos = pos.clone().add(dir.multiplyScalar(2));
 
-			if (snapPoints.length > 0 && i > 0) {
+			if (snapPoints.length > 0 && i > 0 && i < POINTS_PER_CURVE - 1) {
 				const checkPoint = pos.clone().lerp(nextPos, 0.5);
 				const snappedMid = this.findNearestSnapPoint(checkPoint, snapPoints);
 				if (snappedMid) {
-					nextPos.copy(snappedMid);
+					const snapDist = checkPoint.distanceTo(snappedMid);
+					if (snapDist <= MAX_SNAP_DISTANCE) {
+						const prevPoint = points[points.length - 1];
+						if (prevPoint && snappedMid.distanceTo(prevPoint) >= MIN_SEGMENT_LENGTH) {
+							nextPos.copy(snappedMid);
+						}
+					}
 				}
 			}
 
@@ -139,9 +147,16 @@ export default class MyceliumWorld {
 		}
 
 		if (snapPoints.length > 0) {
-			const snappedEnd = this.findNearestSnapPoint(points[points.length - 1], snapPoints);
+			const originalEnd = points[points.length - 1].clone();
+			const snappedEnd = this.findNearestSnapPoint(originalEnd, snapPoints);
 			if (snappedEnd) {
-				points[points.length - 1].copy(snappedEnd);
+				const snapDist = originalEnd.distanceTo(snappedEnd);
+				if (snapDist <= MAX_SNAP_DISTANCE) {
+					const prevPoint = points[points.length - 2];
+					if (prevPoint && snappedEnd.distanceTo(prevPoint) >= MIN_SEGMENT_LENGTH) {
+						points[points.length - 1].copy(snappedEnd);
+					}
+				}
 			}
 		}
 
@@ -265,12 +280,7 @@ export default class MyceliumWorld {
 	}
 
 	updateCamera() {
-		const state = this.getState();
-		const intensity = state.time_loss || 0;
-
-		this.camera.position.x = Math.sin(this.time * 0.1) * 5 * (1 + intensity * 0.1);
-		this.camera.position.y = Math.cos(this.time * 0.1) * 3 * (1 + intensity * 0.1);
-		this.camera.position.z = 80 + Math.sin(this.time * 0.05) * 10;
+		this.camera.position.set(0, 0, 80);
 		this.camera.lookAt(0, 0, 0);
 	}
 
@@ -303,8 +313,6 @@ export default class MyceliumWorld {
 
 		this.updateCamera();
 		this.updateShaders();
-
-		this.scene.rotation.y += 0.0003;
 
 		this.renderer.render(this.scene, this.camera);
 	}
