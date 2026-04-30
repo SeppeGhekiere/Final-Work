@@ -1,54 +1,50 @@
 import * as THREE from "three";
 
-const CURVE_COUNT = 80;
-const POINTS_PER_CURVE = 30;
-const TUBE_SEGMENTS = 100;
+const CURVE_COUNT = 85;
+const POINTS_PER_CURVE = 55;
+const TUBE_SEGMENTS = 50;
 const TUBE_RADIAL_SEGMENTS = 6;
 const SPREAD = 100;
+const SNAP_THRESHOLD = 10;
 
 export default class MyceliumWorld {
-  constructor(container, getState) {
-    this.container = container;
-    this.getState = getState;
+	constructor(container, getState) {
+		this.container = container;
+		this.getState = getState;
 
-    this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0x050403);
+		this.scene = new THREE.Scene();
+		this.scene.background = new THREE.Color(0x050403);
 
-    this.scene.fog = new THREE.FogExp2(0x050403, 0.035);
+		this.scene.fog = new THREE.FogExp2(0x050403, 0.035);
 
-    this.camera = new THREE.PerspectiveCamera(
-      75,
-      window.innerWidth / window.innerHeight,
-      0.1,
-      2000
-    );
-    this.camera.position.set(0, 0, 40);
-    this.camera.lookAt(0, 0, 0);
+		this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+		this.camera.position.set(0, 0, 80);
+		this.camera.lookAt(0, 0, 0);
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    this.renderer.domElement.style.position = 'fixed';
-    this.renderer.domElement.style.inset = '0';
-    this.renderer.domElement.style.zIndex = '0';
+		this.renderer = new THREE.WebGLRenderer({ antialias: true });
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
+		this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+		this.renderer.domElement.style.position = "fixed";
+		this.renderer.domElement.style.inset = "0";
+		this.renderer.domElement.style.zIndex = "0";
 
-    this.container.appendChild(this.renderer.domElement);
+		this.container.appendChild(this.renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0x221100, 0.5);
-    this.scene.add(ambientLight);
+		const ambientLight = new THREE.AmbientLight(0x221100, 0.5);
+		this.scene.add(ambientLight);
 
-    this.time = 0;
+		this.time = 0;
 
-    this.connectionMaterial = new THREE.ShaderMaterial({
-      depthWrite: true,
-      depthTest: true,
-      side: THREE.DoubleSide,
+		this.connectionMaterial = new THREE.ShaderMaterial({
+			depthWrite: true,
+			depthTest: true,
+			side: THREE.DoubleSide,
 
-      uniforms: {
-        time: { value: 0 }
-      },
+			uniforms: {
+				time: { value: 0 },
+			},
 
-      vertexShader: `
+			vertexShader: `
         attribute float aAlong;
         varying float vAlong;
         varying float vDepth;
@@ -63,7 +59,7 @@ export default class MyceliumWorld {
         }
       `,
 
-      fragmentShader: `
+			fragmentShader: `
         uniform float time;
 
         varying float vAlong;
@@ -89,122 +85,154 @@ export default class MyceliumWorld {
           
           gl_FragColor = vec4(color, 1.0);
         }
-      `
-    });
+      `,
+		});
 
-    this.tubes = [];
-    this.group = new THREE.Group();
-    this.scene.add(this.group);
+		this.tubes = [];
+		this.group = new THREE.Group();
+		this.scene.add(this.group);
 
-    this.generateNest();
+		this.generateNest();
 
-    this.createDustParticles();
+		this.createDustParticles();
 
-    this.frame = 0;
+		this.frame = 0;
 
-    this.handleResize();
-    window.addEventListener("resize", () => this.handleResize());
+		this.handleResize();
+		window.addEventListener("resize", () => this.handleResize());
 
-    this.animate();
-  }
+		this.animate();
+	}
 
-  createCurve() {
-    const points = [];
-    const center = new THREE.Vector3(0, 0, 0);
+	createCurve(snapPoints = []) {
+		const points = [];
+		const center = new THREE.Vector3(0, 0, 0);
 
-    let pos = new THREE.Vector3(
-      (Math.random() - 0.5) * SPREAD,
-      (Math.random() - 0.5) * SPREAD,
-      (Math.random() - 0.5) * SPREAD
-    );
+		let pos = new THREE.Vector3((Math.random() - 0.5) * SPREAD, (Math.random() - 0.5) * SPREAD, -20 + Math.random() * 80);
 
-    let dir = new THREE.Vector3(
-      Math.random() - 0.5,
-      Math.random() - 0.5,
-      Math.random() - 0.5
-    ).normalize();
+		if (snapPoints.length > 0) {
+			const snappedStart = this.findNearestSnapPoint(pos, snapPoints);
+			if (snappedStart) {
+				pos.copy(snappedStart);
+			}
+		}
 
-    for (let i = 0; i < POINTS_PER_CURVE; i++) {
-      dir.lerp(
-        new THREE.Vector3(
-          Math.random() - 0.5,
-          Math.random() - 0.5,
-          Math.random() - 0.5
-        ).normalize(),
-        0.2
-      ).normalize();
+		let dir = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
 
-      pos.lerp(center, 0.05);
+		for (let i = 0; i < POINTS_PER_CURVE; i++) {
+			dir.lerp(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(), 0.2).normalize();
 
-      pos = pos.clone().add(dir.multiplyScalar(2));
+			pos.lerp(center, 0.01);
 
-      points.push(pos.clone());
-    }
+			const nextPos = pos.clone().add(dir.multiplyScalar(2));
 
-    return new THREE.CatmullRomCurve3(points);
-  }
+			if (snapPoints.length > 0 && i > 0) {
+				const checkPoint = pos.clone().lerp(nextPos, 0.5);
+				const snappedMid = this.findNearestSnapPoint(checkPoint, snapPoints);
+				if (snappedMid) {
+					nextPos.copy(snappedMid);
+				}
+			}
 
-  generateNest() {
-    for (let i = 0; i < CURVE_COUNT; i++) {
-      const curve = this.createCurve();
+			pos = nextPos;
+			points.push(pos.clone());
+		}
 
-      const radius = 0.7 + Math.sin(i * 0.3) * 0.1;
+		if (snapPoints.length > 0) {
+			const snappedEnd = this.findNearestSnapPoint(points[points.length - 1], snapPoints);
+			if (snappedEnd) {
+				points[points.length - 1].copy(snappedEnd);
+			}
+		}
 
-      const geometry = new THREE.TubeGeometry(
-        curve,
-        TUBE_SEGMENTS,
-        radius,
-        TUBE_RADIAL_SEGMENTS,
-        false
-      );
+		const curve = new THREE.CatmullRomCurve3(points);
+		const startPoint = points[0].clone();
+		const mid25 = points[Math.floor(points.length * 0.25)].clone();
+		const mid50 = points[Math.floor(points.length * 0.5)].clone();
+		const mid75 = points[Math.floor(points.length * 0.75)].clone();
+		const endPoint = points[points.length - 1].clone();
 
-      const count = geometry.attributes.position.count;
-      const along = new Float32Array(count);
-      const ringSize = TUBE_RADIAL_SEGMENTS + 1;
+		return { curve, startPoint, mid25, mid50, mid75, endPoint };
+	}
 
-      for (let t = 0; t < TUBE_SEGMENTS + 1; t++) {
-        const value = t / TUBE_SEGMENTS;
-        for (let r = 0; r < ringSize; r++) {
-          const index = t * ringSize + r;
-          along[index] = value;
-        }
-      }
+	findNearestSnapPoint(pos, snapPoints) {
+		let nearest = null;
+		let nearestDist = SNAP_THRESHOLD;
 
-      geometry.setAttribute("aAlong", new THREE.BufferAttribute(along, 1));
+		for (const sp of snapPoints) {
+			const dist = pos.distanceTo(sp);
+			if (dist < nearestDist) {
+				nearestDist = dist;
+				nearest = sp.clone();
+			}
+		}
 
-      const mesh = new THREE.Mesh(geometry, this.connectionMaterial.clone());
+		return nearest;
+	}
 
-      this.group.add(mesh);
-      this.tubes.push(mesh);
-    }
-  }
+	generateNest() {
+		const snapPoints = [];
 
-  createDustParticles() {
-    const DUST_COUNT = 800;
-    const positions = new Float32Array(DUST_COUNT * 3);
-    const sizes = new Float32Array(DUST_COUNT);
+		for (let i = 0; i < CURVE_COUNT; i++) {
+			const { curve, startPoint, mid25, mid50, mid75, endPoint } = this.createCurve(snapPoints);
 
-    for (let i = 0; i < DUST_COUNT; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 120;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 120;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 120;
-      sizes[i] = 0.3 + Math.random() * 0.2;
-    }
+			const radius = 0.7 + Math.sin(i * 0.3) * 0.1;
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+			const geometry = new THREE.TubeGeometry(curve, TUBE_SEGMENTS, radius, TUBE_RADIAL_SEGMENTS, false);
 
-    const material = new THREE.ShaderMaterial({
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
+			const count = geometry.attributes.position.count;
+			const along = new Float32Array(count);
+			const ringSize = TUBE_RADIAL_SEGMENTS + 1;
 
-      uniforms: {
-        time: { value: 0 }
-      },
+			for (let t = 0; t < TUBE_SEGMENTS + 1; t++) {
+				const value = t / TUBE_SEGMENTS;
+				for (let r = 0; r < ringSize; r++) {
+					const index = t * ringSize + r;
+					along[index] = value;
+				}
+			}
 
-      vertexShader: `
+			geometry.setAttribute("aAlong", new THREE.BufferAttribute(along, 1));
+
+			const mesh = new THREE.Mesh(geometry, this.connectionMaterial.clone());
+
+			this.group.add(mesh);
+			this.tubes.push(mesh);
+
+			snapPoints.push(startPoint);
+			snapPoints.push(mid25);
+			snapPoints.push(mid50);
+			snapPoints.push(mid75);
+			snapPoints.push(endPoint);
+		}
+	}
+
+	createDustParticles() {
+		const DUST_COUNT = 800;
+		const positions = new Float32Array(DUST_COUNT * 3);
+		const sizes = new Float32Array(DUST_COUNT);
+
+		for (let i = 0; i < DUST_COUNT; i++) {
+			positions[i * 3] = (Math.random() - 0.5) * 120;
+			positions[i * 3 + 1] = (Math.random() - 0.5) * 120;
+			positions[i * 3 + 2] = (Math.random() - 0.5) * 120;
+			sizes[i] = 0.3 + Math.random() * 0.2;
+		}
+
+		const geometry = new THREE.BufferGeometry();
+		geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+		geometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
+
+		const material = new THREE.ShaderMaterial({
+			transparent: true,
+			depthWrite: false,
+			blending: THREE.AdditiveBlending,
+
+			uniforms: {
+				time: { value: 0 },
+			},
+
+			vertexShader: `
         attribute float size;
         varying float vAlpha;
         
@@ -217,7 +245,7 @@ export default class MyceliumWorld {
         }
       `,
 
-      fragmentShader: `
+			fragmentShader: `
         varying float vAlpha;
         
         void main() {
@@ -229,84 +257,84 @@ export default class MyceliumWorld {
           
           gl_FragColor = vec4(color, alpha);
         }
-      `
-    });
+      `,
+		});
 
-    this.dust = new THREE.Points(geometry, material);
-    this.scene.add(this.dust);
-  }
+		this.dust = new THREE.Points(geometry, material);
+		this.scene.add(this.dust);
+	}
 
-  updateCamera() {
-    const state = this.getState();
-    const intensity = state.time_loss || 0;
+	updateCamera() {
+		const state = this.getState();
+		const intensity = state.time_loss || 0;
 
-    this.camera.position.x = Math.sin(this.time * 0.1) * 5 * (1 + intensity * 0.1);
-    this.camera.position.y = Math.cos(this.time * 0.1) * 3 * (1 + intensity * 0.1);
-    this.camera.position.z = 40 + Math.sin(this.time * 0.05) * 10;
-    this.camera.lookAt(0, 0, 0);
-  }
+		this.camera.position.x = Math.sin(this.time * 0.1) * 5 * (1 + intensity * 0.1);
+		this.camera.position.y = Math.cos(this.time * 0.1) * 3 * (1 + intensity * 0.1);
+		this.camera.position.z = 80 + Math.sin(this.time * 0.05) * 10;
+		this.camera.lookAt(0, 0, 0);
+	}
 
-  updateShaders() {
-    this.time += 0.016;
+	updateShaders() {
+		this.time += 0.016;
 
-    this.tubes.forEach(mesh => {
-      if (mesh && mesh.material) {
-        mesh.material.uniforms.time.value = this.time;
-      }
-    });
+		this.tubes.forEach((mesh) => {
+			if (mesh && mesh.material) {
+				mesh.material.uniforms.time.value = this.time;
+			}
+		});
 
-    if (this.dust && this.dust.material) {
-      this.dust.material.uniforms.time.value = this.time;
-      
-      const positions = this.dust.geometry.attributes.position.array;
-      for (let i = 0; i < positions.length; i += 3) {
-        positions[i] += Math.sin(this.time * 0.5 + i) * 0.01;
-        positions[i + 1] += Math.cos(this.time * 0.3 + i) * 0.01;
-        positions[i + 2] += Math.sin(this.time * 0.4 + i) * 0.005;
-      }
-      this.dust.geometry.attributes.position.needsUpdate = true;
-    }
-  }
+		if (this.dust && this.dust.material) {
+			this.dust.material.uniforms.time.value = this.time;
 
-  animate() {
-    requestAnimationFrame(() => this.animate());
+			const positions = this.dust.geometry.attributes.position.array;
+			for (let i = 0; i < positions.length; i += 3) {
+				positions[i] += Math.sin(this.time * 0.5 + i) * 0.01;
+				positions[i + 1] += Math.cos(this.time * 0.3 + i) * 0.01;
+				positions[i + 2] += Math.sin(this.time * 0.4 + i) * 0.005;
+			}
+			this.dust.geometry.attributes.position.needsUpdate = true;
+		}
+	}
 
-    this.frame++;
+	animate() {
+		requestAnimationFrame(() => this.animate());
 
-    this.updateCamera();
-    this.updateShaders();
+		this.frame++;
 
-    this.scene.rotation.y += 0.0003;
+		this.updateCamera();
+		this.updateShaders();
 
-    this.renderer.render(this.scene, this.camera);
-  }
+		this.scene.rotation.y += 0.0003;
 
-  handleResize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-  }
+		this.renderer.render(this.scene, this.camera);
+	}
 
-  destroy() {
-    window.removeEventListener("resize", this.handleResize);
+	handleResize() {
+		this.camera.aspect = window.innerWidth / window.innerHeight;
+		this.camera.updateProjectionMatrix();
+		this.renderer.setSize(window.innerWidth, window.innerHeight);
+	}
 
-    this.tubes.forEach(mesh => {
-      if (mesh) {
-        this.group.remove(mesh);
-        mesh.geometry.dispose();
-        mesh.material.dispose();
-      }
-    });
+	destroy() {
+		window.removeEventListener("resize", this.handleResize);
 
-    if (this.dust) {
-      this.dust.geometry.dispose();
-      this.dust.material.dispose();
-      this.scene.remove(this.dust);
-    }
+		this.tubes.forEach((mesh) => {
+			if (mesh) {
+				this.group.remove(mesh);
+				mesh.geometry.dispose();
+				mesh.material.dispose();
+			}
+		});
 
-    if (this.renderer && this.renderer.domElement && this.container) {
-      this.container.removeChild(this.renderer.domElement);
-      this.renderer.dispose();
-    }
-  }
+		if (this.dust) {
+			this.dust.geometry.dispose();
+			this.dust.material.dispose();
+			this.scene.remove(this.dust);
+		}
+
+		if (this.renderer && this.renderer.domElement && this.container) {
+			this.container.removeChild(this.renderer.domElement);
+			this.renderer.dispose();
+		}
+	}
 }
