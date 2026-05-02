@@ -3,15 +3,18 @@ import * as THREE from "three";
 const CURVE_COUNT = 130;
 const POINTS_PER_CURVE = 55;
 const TUBE_SEGMENTS = 50;
-const CIRCLE_SEGMENTS = 24;
+const TUBE_RADIAL_SEGMENTS = 24;
 const SPREAD = 80;
 const SNAP_THRESHOLD = 10;
-const MAX_SNAP_DISTANCE = 2;
+const MAX_SNAP_DISTANCE = 4;
 const MIN_SEGMENT_LENGTH = 2;
 const GENERATE_AHEAD = 20;
 const REMOVE_BEHIND = 30;
 const BATCH_SIZE = 20;
 const FORWARD_SPEED = 0.05;
+const SPATIAL_WAVE = true;
+const PULSE_ENABLED = true;
+const FLOOR_MAX_Z = 40;
 
 export default class MyceliumWorld {
 	constructor(container, getState) {
@@ -21,7 +24,7 @@ export default class MyceliumWorld {
 		this.scene = new THREE.Scene();
 		this.scene.background = new THREE.Color(0x050403);
 
-		this.scene.fog = new THREE.FogExp2(0x050403, 0.20);
+		this.scene.fog = new THREE.FogExp2(0x050403, 0.035);
 
 		this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
 		this.camera.position.set(0, 0, 80);
@@ -52,60 +55,76 @@ export default class MyceliumWorld {
 			uniforms: {
 				time: { value: 0 },
 				uCameraPos: { value: new THREE.Vector3() },
+				uSpatialWave: { value: SPATIAL_WAVE ? 1 : 0 },
+				uPulse: { value: PULSE_ENABLED ? 1 : 0 },
 			},
 
 			vertexShader: `
-        attribute float aAlong;
-        varying float vAlong;
-        varying float vDepth;
-        varying vec3 vWorldPosition;
+				attribute float aAlong;
+				varying float vAlong;
+				varying float vDepth;
+				varying vec3 vWorldPosition;
 
-        void main() {
-          vAlong = aAlong;
-          
-          vec4 worldPos = modelMatrix * vec4(position, 1.0);
-          vWorldPosition = worldPos.xyz;
-          
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          vDepth = -mvPosition.z;
-          
-          gl_Position = projectionMatrix * mvPosition;
-        }
-      `,
+				void main() {
+					vAlong = aAlong;
+					
+					vec4 worldPos = modelMatrix * vec4(position, 1.0);
+					vWorldPosition = worldPos.xyz;
+					
+					vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+					vDepth = -mvPosition.z;
+					
+					gl_Position = projectionMatrix * mvPosition;
+				}
+			`,
 
 			fragmentShader: `
-        uniform float time;
-        uniform vec3 uCameraPos;
+				uniform float time;
+				uniform vec3 uCameraPos;
+				uniform float uSpatialWave;
+				uniform float uPulse;
 
-        varying float vAlong;
-        varying float vDepth;
-        varying vec3 vWorldPosition;
+				varying float vAlong;
+				varying float vDepth;
+				varying vec3 vWorldPosition;
 
-        void main() {
-          float dist = length(vWorldPosition - uCameraPos);
-          float maskRadius = 6.0;
-          if (dist < maskRadius) discard;
-          
-          float repeat = 2.0;
-          float speed = 0.4;
-          
-          float flow = vAlong * repeat - time * speed;
-          float pulse = fract(flow);
-          
-          float band = smoothstep(0.0, 0.15, pulse) *
-                       smoothstep(1.0, 0.85, pulse);
-          
-          vec3 base = vec3(0.3, 0.6, 0.2);
-          vec3 highlight = vec3(0.5, 0.25, 0.1);
-          
-          vec3 color = mix(base, highlight, band);
-          
-          float depthFade = exp(-vDepth * 0.025);
-          color *= depthFade;
-          
-          gl_FragColor = vec4(color, 1.0);
-        }
-      `,
+				void main() {
+					float dist = length(vWorldPosition - uCameraPos);
+					float maskRadius = 6.0;
+					if (dist < maskRadius) discard;
+					
+					vec3 base = vec3(0.5, 0.25, 0.1);
+					vec3 color = base;
+					float pulseBand = 0.0;
+					
+					if (uPulse > 0.5) {
+						if (uSpatialWave > 0.5) {
+							float cameraZ = uCameraPos.z;
+							float cycleTime = 5.0;
+							float waveOffset = mod(time, cycleTime) * 20.0;
+							float wavefrontZ = cameraZ + waveOffset;
+							float distBelow = vWorldPosition.z - wavefrontZ;
+							float pulseLength = 15.0;
+							float edgeSoftness = 1.0;
+							pulseBand = smoothstep(0.0, edgeSoftness, distBelow) * (1.0 - smoothstep(pulseLength, pulseLength + edgeSoftness, distBelow));
+						} else {
+							float repeat = 2.0;
+							float speed = 0.4;
+							float flow = vAlong * repeat - time * speed;
+							float pulse = fract(flow);
+							pulseBand = smoothstep(0.0, 0.15, pulse) * smoothstep(1.0, 0.85, pulse);
+						}
+						
+						vec3 highlight = vec3(0.7, 0.35, 0.15);
+						color = mix(base, highlight, pulseBand);
+					}
+					
+					float depthFade = exp(-vDepth * 0.025);
+					color *= depthFade;
+					
+					gl_FragColor = vec4(color, 1.0);
+				}
+			`,
 		});
 
 		this.tubes = [];
@@ -113,7 +132,6 @@ export default class MyceliumWorld {
 		this.scene.add(this.group);
 
 		this.generateNest();
-		this.generateBuffer();
 
 		this.frame = 0;
 
@@ -129,7 +147,7 @@ export default class MyceliumWorld {
 		const z = dir.z;
 		const zRatio = Math.abs(z) / len;
 		if (zRatio < minZ) {
-			const scale = minZ * len / Math.abs(z);
+			const scale = (minZ * len) / Math.abs(z);
 			dir.x *= scale;
 			dir.y *= scale;
 			if (z < 0) dir.z = -minZ * len;
@@ -152,14 +170,14 @@ export default class MyceliumWorld {
 			}
 		}
 
-		let dir = this.constrainToHorizontal(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5));
+		let dir = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
 
 		for (let i = 0; i < POINTS_PER_CURVE; i++) {
 			dir = this.constrainToHorizontal(dir.lerp(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(), 0.2));
 
 			pos.lerp(center, 0.01);
 
-			let nextPos = pos.clone().add(dir.multiplyScalar(2.5));
+			const nextPos = pos.clone().add(dir.clone().multiplyScalar(2));
 
 			if (snapPoints.length > 0 && i > 0 && i < POINTS_PER_CURVE - 1) {
 				const checkPoint = pos.clone().lerp(nextPos, 0.5);
@@ -172,13 +190,6 @@ export default class MyceliumWorld {
 							nextPos.copy(snappedMid);
 						}
 					}
-				}
-			}
-
-			if (points.length > 0) {
-				const prevPoint = points[points.length - 1];
-				if (nextPos.distanceTo(prevPoint) < 1.5) {
-					nextPos = prevPoint.clone().add(nextPos.clone().sub(prevPoint).normalize().multiplyScalar(1.5));
 				}
 			}
 
@@ -210,6 +221,21 @@ export default class MyceliumWorld {
 		return { curve, startPoint, mid25, mid50, mid75, endPoint };
 	}
 
+	findNearestSnapPoint(pos, snapPoints) {
+		let nearest = null;
+		let nearestDist = SNAP_THRESHOLD;
+
+		for (const sp of snapPoints) {
+			const dist = pos.distanceTo(sp);
+			if (dist < nearestDist) {
+				nearestDist = dist;
+				nearest = sp.clone();
+			}
+		}
+
+		return nearest;
+	}
+
 	createSolidTubeGeometry(curve, radius, reverseDirection) {
 		const vertices = [];
 		const indices = [];
@@ -228,10 +254,10 @@ export default class MyceliumWorld {
 			vertices.push(centerPos.x, centerPos.y, centerPos.z);
 			along.push(alongValue);
 
-			const stepStartIdx = step * (CIRCLE_SEGMENTS + 1);
+			const stepStartIdx = step * (TUBE_RADIAL_SEGMENTS + 1);
 
-			for (let c = 0; c < CIRCLE_SEGMENTS; c++) {
-				const angle = (c / CIRCLE_SEGMENTS) * Math.PI * 2;
+			for (let c = 0; c < TUBE_RADIAL_SEGMENTS; c++) {
+				const angle = (c / TUBE_RADIAL_SEGMENTS) * Math.PI * 2;
 				const x = centerPos.x + Math.cos(angle) * radius;
 				const y = centerPos.y + Math.sin(angle) * radius;
 				const z = centerPos.z;
@@ -241,23 +267,23 @@ export default class MyceliumWorld {
 
 				if (step < TUBE_SEGMENTS) {
 					const currOuter = stepStartIdx + 1 + c;
-					const nextOuter = (step + 1) * (CIRCLE_SEGMENTS + 1) + 1 + c;
-					const nextOuterNext = (step + 1) * (CIRCLE_SEGMENTS + 1) + 1 + ((c + 1) % CIRCLE_SEGMENTS);
+					const nextOuter = (step + 1) * (TUBE_RADIAL_SEGMENTS + 1) + 1 + c;
+					const nextOuterNext = (step + 1) * (TUBE_RADIAL_SEGMENTS + 1) + 1 + ((c + 1) % TUBE_RADIAL_SEGMENTS);
 
-					indices.push(stepStartIdx + 1 + c, nextOuter, stepStartIdx + 1 + ((c + 1) % CIRCLE_SEGMENTS));
-					indices.push(nextOuter, nextOuterNext, stepStartIdx + 1 + ((c + 1) % CIRCLE_SEGMENTS));
+					indices.push(stepStartIdx + 1 + c, nextOuter, stepStartIdx + 1 + ((c + 1) % TUBE_RADIAL_SEGMENTS));
+					indices.push(nextOuter, nextOuterNext, stepStartIdx + 1 + ((c + 1) % TUBE_RADIAL_SEGMENTS));
 				}
 			}
 		}
 
 		const startCenterIdx = 0;
-		for (let c = 0; c < CIRCLE_SEGMENTS; c++) {
-			indices.push(startCenterIdx, startCenterIdx + 1 + ((c + 1) % CIRCLE_SEGMENTS), startCenterIdx + 1 + c);
+		for (let c = 0; c < TUBE_RADIAL_SEGMENTS; c++) {
+			indices.push(startCenterIdx, startCenterIdx + 1 + ((c + 1) % TUBE_RADIAL_SEGMENTS), startCenterIdx + 1 + c);
 		}
 
-		const endCenterIdx = TUBE_SEGMENTS * (CIRCLE_SEGMENTS + 1);
-		for (let c = 0; c < CIRCLE_SEGMENTS; c++) {
-			indices.push(endCenterIdx, endCenterIdx + 1 + c, endCenterIdx + 1 + ((c + 1) % CIRCLE_SEGMENTS));
+		const endCenterIdx = TUBE_SEGMENTS * (TUBE_RADIAL_SEGMENTS + 1);
+		for (let c = 0; c < TUBE_RADIAL_SEGMENTS; c++) {
+			indices.push(endCenterIdx, endCenterIdx + 1 + c, endCenterIdx + 1 + ((c + 1) % TUBE_RADIAL_SEGMENTS));
 		}
 
 		const geometry = new THREE.BufferGeometry();
@@ -268,24 +294,11 @@ export default class MyceliumWorld {
 		return geometry;
 	}
 
-	findNearestSnapPoint(pos, snapPoints) {
-		let nearest = null;
-		let nearestDist = SNAP_THRESHOLD;
-
-		for (const sp of snapPoints) {
-			const dist = pos.distanceTo(sp);
-			if (dist < nearestDist) {
-				nearestDist = dist;
-				nearest = sp.clone();
-			}
-		}
-
-		return nearest;
-	}
-
 	generateNest() {
+		const snapPoints = [];
+
 		for (let i = 0; i < CURVE_COUNT; i++) {
-			const { curve, startPoint, mid25, mid50, mid75, endPoint } = this.createCurve(this.snapPoints);
+			const { curve, startPoint, mid25, mid50, mid75, endPoint } = this.createCurve(snapPoints);
 
 			const radius = 0.7 + Math.sin(i * 0.3) * 0.1;
 			const reverseDirection = endPoint.z < startPoint.z;
@@ -296,62 +309,22 @@ export default class MyceliumWorld {
 			this.group.add(mesh);
 			this.tubes.push(mesh);
 
-			this.snapPoints.push(startPoint);
-			this.snapPoints.push(mid25);
-			this.snapPoints.push(mid50);
-			this.snapPoints.push(mid75);
-			this.snapPoints.push(endPoint);
+			snapPoints.push(startPoint);
+			snapPoints.push(mid25);
+			snapPoints.push(mid50);
+			snapPoints.push(mid75);
+			snapPoints.push(endPoint);
 		}
-
-		this.lastGeneratedZ = 50;
-	}
-
-	generateBuffer() {
-		const bufferZ = 80;
-		for (let i = 0; i < 30; i++) {
-			const zOffset = 10 + Math.random() * 30;
-			const { curve, startPoint, mid25, mid50, mid75, endPoint } = this.createCurveAtZ(bufferZ + zOffset);
-
-			const radius = 0.7 + Math.random() * 0.2;
-			const reverseDirection = endPoint.z < startPoint.z;
-			const geometry = this.createSolidTubeGeometry(curve, radius, reverseDirection);
-
-			const mesh = new THREE.Mesh(geometry, this.connectionMaterial.clone());
-
-			this.group.add(mesh);
-			this.tubes.push(mesh);
-
-			this.snapPoints.push(startPoint);
-			this.snapPoints.push(mid25);
-			this.snapPoints.push(mid50);
-			this.snapPoints.push(mid75);
-			this.snapPoints.push(endPoint);
-		}
-
-		this.lastGeneratedZ = 120;
-	}
-
-	updateCamera() {
-		this.time += 0.002;
-		this.totalDistance += FORWARD_SPEED;
-
-		const zPos = 40 + this.totalDistance;
-		const xWeave = Math.sin(this.time * 0.5) * 6;
-		const yWeave = Math.cos(this.time * 0.7) * 4;
-
-		this.camera.position.set(xWeave, yWeave, zPos);
-		this.camera.lookAt(xWeave, yWeave, zPos + 15);
-
-		this.generateNewTubes();
-		this.removeOldTubes();
 	}
 
 	generateNewTubes() {
-		if (this.camera.position.z < this.lastGeneratedZ - 40) return;
+		if (this.camera.position.z < this.lastGeneratedZ - FLOOR_MAX_Z) return;
+
+		const snapPoints = this.snapPoints.slice(-50);
 
 		for (let i = 0; i < BATCH_SIZE; i++) {
 			const zOffset = 10 + Math.random() * 20;
-			const { curve, startPoint, mid25, mid50, mid75, endPoint } = this.createCurveAtZ(this.lastGeneratedZ + zOffset);
+			const { curve, startPoint, mid25, mid50, mid75, endPoint } = this.createCurveAtZ(this.lastGeneratedZ + zOffset, snapPoints);
 
 			const radius = 0.7 + Math.random() * 0.2;
 			const reverseDirection = endPoint.z < startPoint.z;
@@ -372,35 +345,31 @@ export default class MyceliumWorld {
 		this.lastGeneratedZ += GENERATE_AHEAD;
 	}
 
-	createCurveAtZ(zBase) {
+	createCurveAtZ(zBase, snapPoints = []) {
 		const points = [];
 		const center = new THREE.Vector3(0, 0, zBase);
 
-		let pos = new THREE.Vector3(
-			(Math.random() - 0.5) * SPREAD,
-			(Math.random() - 0.5) * SPREAD,
-			zBase + Math.random() * 50
-		);
+		let pos = new THREE.Vector3((Math.random() - 0.5) * SPREAD, (Math.random() - 0.5) * SPREAD, zBase + Math.random() * 50);
 
-		if (this.snapPoints.length > 0) {
-			const snappedStart = this.findNearestSnapPoint(pos, this.snapPoints);
+		if (snapPoints.length > 0) {
+			const snappedStart = this.findNearestSnapPoint(pos, snapPoints);
 			if (snappedStart && pos.distanceTo(snappedStart) <= MAX_SNAP_DISTANCE) {
 				pos.copy(snappedStart);
 			}
 		}
 
-		let dir = this.constrainToHorizontal(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5));
+		let dir = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
 
 		for (let i = 0; i < POINTS_PER_CURVE; i++) {
 			dir = this.constrainToHorizontal(dir.lerp(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(), 0.2));
 
 			pos.lerp(center, 0.01);
 
-			let nextPos = pos.clone().add(dir.multiplyScalar(2.5));
+			const nextPos = pos.clone().add(dir.clone().multiplyScalar(2));
 
-			if (this.snapPoints.length > 0 && i > 0 && i < POINTS_PER_CURVE - 1) {
+			if (snapPoints.length > 0 && i > 0 && i < POINTS_PER_CURVE - 1) {
 				const checkPoint = pos.clone().lerp(nextPos, 0.5);
-				const snappedMid = this.findNearestSnapPoint(checkPoint, this.snapPoints);
+				const snappedMid = this.findNearestSnapPoint(checkPoint, snapPoints);
 				if (snappedMid) {
 					const snapDist = checkPoint.distanceTo(snappedMid);
 					if (snapDist <= MAX_SNAP_DISTANCE) {
@@ -412,20 +381,13 @@ export default class MyceliumWorld {
 				}
 			}
 
-			if (points.length > 0) {
-				const prevPoint = points[points.length - 1];
-				if (nextPos.distanceTo(prevPoint) < 1.5) {
-					nextPos = prevPoint.clone().add(nextPos.clone().sub(prevPoint).normalize().multiplyScalar(1.5));
-				}
-			}
-
 			pos = nextPos;
 			points.push(pos.clone());
 		}
 
-		if (this.snapPoints.length > 0) {
+		if (snapPoints.length > 0) {
 			const originalEnd = points[points.length - 1].clone();
-			const snappedEnd = this.findNearestSnapPoint(originalEnd, this.snapPoints);
+			const snappedEnd = this.findNearestSnapPoint(originalEnd, snapPoints);
 			if (snappedEnd) {
 				const snapDist = originalEnd.distanceTo(snappedEnd);
 				if (snapDist <= MAX_SNAP_DISTANCE) {
@@ -467,9 +429,22 @@ export default class MyceliumWorld {
 		this.snapPoints = this.snapPoints.filter((point) => point.z >= removeThreshold);
 	}
 
-	updateShaders() {
+	updateCamera() {
 		this.time += 0.016;
+		this.totalDistance += FORWARD_SPEED;
 
+		const zPos = 40 + this.totalDistance;
+		const xWeave = Math.sin(this.time * 0.5) * 6;
+		const yWeave = Math.cos(this.time * 0.7) * 4;
+
+		this.camera.position.set(xWeave, yWeave, zPos);
+		this.camera.lookAt(xWeave, yWeave, zPos + 15);
+
+		this.generateNewTubes();
+		this.removeOldTubes();
+	}
+
+	updateShaders() {
 		const camPos = this.camera.position;
 
 		this.tubes.forEach((mesh) => {
@@ -512,5 +487,27 @@ export default class MyceliumWorld {
 			this.container.removeChild(this.renderer.domElement);
 			this.renderer.dispose();
 		}
+	}
+
+	setSpatialWave(enabled) {
+		this.tubes.forEach((mesh) => {
+			mesh.material.uniforms.uSpatialWave.value = enabled ? 1 : 0;
+		});
+		this.connectionMaterial.uniforms.uSpatialWave.value = enabled ? 1 : 0;
+	}
+
+	getSpatialWave() {
+		return this.connectionMaterial.uniforms.uSpatialWave.value > 0.5;
+	}
+
+	setPulse(enabled) {
+		this.tubes.forEach((mesh) => {
+			mesh.material.uniforms.uPulse.value = enabled ? 1 : 0;
+		});
+		this.connectionMaterial.uniforms.uPulse.value = enabled ? 1 : 0;
+	}
+
+	getPulse() {
+		return this.connectionMaterial.uniforms.uPulse.value > 0.5;
 	}
 }
