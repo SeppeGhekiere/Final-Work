@@ -35,16 +35,10 @@ export default function App() {
   };
 
   return (
-    <div
-      className="app"
-      style={{
-        filter: `blur(${effects.blur}px)`,
-        transform: `scale(${1 - effects.blur * 0.002})`
-      }}
-    >
-      <MyceliumLayer ref={myceliumRef} />
+    <div className="app">
+      <MyceliumLayer ref={myceliumRef} blur={effects.blur} />
 
-      <div className="story-container">
+      <div className="story-container" style={{ filter: effects.blur > 0 ? `blur(${effects.blur * 0.5}px)` : "none" }}>
         <DialogueBox
           lines={scene.lines}
           effects={effects}
@@ -52,7 +46,7 @@ export default function App() {
         />
       </div>
 
-      <div className="choices-container">
+      <div className="choices-container" style={{ filter: effects.blur > 0 ? `blur(${effects.blur * 0.5}px)` : "none" }}>
         {isDialogueFinished && (
           <ChoiceList
             choices={scene.choices}
@@ -61,6 +55,11 @@ export default function App() {
           />
         )}
       </div>
+
+      <div
+        className="sleepiness-overlay"
+        style={{ opacity: effects.sleepiness ?? 0 }}
+      />
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import MyceliumWorld from "../three/MyceliumWorld";
 import { gameState } from "../state/gameState";
 
-const MyceliumLayer = forwardRef(function MyceliumLayer(props, ref) {
+const MyceliumLayer = forwardRef(function MyceliumLayer({ blur = 0 }, ref) {
   const containerRef = useRef(null);
   const worldRef = useRef(null);
 
@@ -25,7 +25,9 @@ const MyceliumLayer = forwardRef(function MyceliumLayer(props, ref) {
         position: "fixed",
         inset: 0,
         zIndex: 0,
-        pointerEvents: "none"
+        pointerEvents: "none",
+        filter: blur > 0 ? `blur(${blur}px)` : "none",
+        transform: blur > 0 ? `scale(${1 - blur * 0.002})` : "none",
       }}
     />
   );

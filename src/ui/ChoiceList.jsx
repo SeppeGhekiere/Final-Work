@@ -28,12 +28,17 @@ export default function ChoiceList({ choices, onSelect, effects }) {
 
         const isLeftChoice = i % 2 === 0;
         const number = i + 1;
+        const hasDrift = effects.drift > 0.1;
 
         return (
           <button
             key={i}
             onClick={() => onSelect(choice)}
-            style={{ backgroundImage: `url(${decorImages[i]})` }}
+            style={{
+              backgroundImage: `url(${decorImages[i]})`,
+              animation: hasDrift ? `drift ${3 + i * 0.5}s ease-in-out infinite` : "none",
+              animationDelay: `-${i * 0.7}s`,
+            }}
             className={isLeftChoice ? "choice-number-right" : "choice-number-left"}
           >
             <span className="choice-text">{choice.text}</span>

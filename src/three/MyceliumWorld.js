@@ -12,7 +12,7 @@ const GENERATE_AHEAD = 20;
 const REMOVE_BEHIND = 30;
 const BATCH_SIZE = 20;
 const FORWARD_SPEED = 0.05;
-const SPATIAL_WAVE = true;
+const SPATIAL_WAVE = false;
 const PULSE_ENABLED = true;
 const FLOOR_MAX_Z = 40;
 const GROW_DURATION = 1.5;
@@ -109,7 +109,7 @@ export default class MyceliumWorld {
 							float cameraZ = uCameraPos.z;
 							float cycleTime = 5.0;
 							float waveOffset = mod(time, cycleTime) * 20.0;
-							float wavefrontZ = cameraZ + waveOffset;
+							float wavefrontZ = cameraZ - 30.0 + waveOffset;
 							float distBelow = vWorldPosition.z - wavefrontZ;
 							float pulseLength = 15.0;
 							float edgeSoftness = 1.0;
@@ -131,7 +131,7 @@ export default class MyceliumWorld {
 						float redElapsed = time - uRedPulseTime;
 						if (redElapsed < 5.0) {
 							float cameraZ = uCameraPos.z;
-							float redWavefrontZ = cameraZ + redElapsed * 20.0;
+							float redWavefrontZ = cameraZ - 15.0 + redElapsed * 20.0;
 							float distFromRed = vWorldPosition.z - redWavefrontZ;
 							float redPulseLength = 15.0;
 							float redEdge = 1.0;
@@ -325,7 +325,6 @@ export default class MyceliumWorld {
 
 		try {
 			for (let i = 0; i < CURVE_COUNT; i++) {
-
 				let curve, startPoint, mid25, mid50, mid75, endPoint, radius, reverseDirection, geometry, mesh;
 
 				try {

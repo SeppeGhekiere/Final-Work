@@ -21,9 +21,24 @@ export default function DialogueBox({ lines, effects, onFinish }) {
 
   return (
     <div className="dialogue-box">
-      {displayedLines.map((line, i) => (
-        <p key={i}>{line}</p>
-      ))}
+      {displayedLines.map((line, i) => {
+        const totalLines = displayedLines.length;
+        const age = totalLines - 1 - i;
+        const decay = effects?.memoryDecay ?? 0;
+        const lineOpacity = Math.min(1, 1 - age * decay * 0.3);
+
+        return (
+          <p
+            key={i}
+            style={{
+              opacity: Math.max(lineOpacity, 0.05),
+              transition: "opacity 1s ease",
+            }}
+          >
+            {line}
+          </p>
+        );
+      })}
 
       {!isFinished && <p>{currentText}</p>}
     </div>
