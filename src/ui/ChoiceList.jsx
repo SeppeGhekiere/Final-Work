@@ -36,7 +36,10 @@ export default function ChoiceList({ choices, onSelect, effects }) {
             onClick={() => onSelect(choice)}
             style={{
               backgroundImage: `url(${decorImages[i]})`,
-              animation: hasDrift ? `drift ${3 + i * 0.5}s ease-in-out infinite` : "none",
+              animationName: hasDrift ? "drift" : "none",
+              animationDuration: hasDrift ? `${3 + i * 0.5}s` : "0s",
+              animationTimingFunction: "ease-in-out",
+              animationIterationCount: "infinite",
               animationDelay: `-${i * 0.7}s`,
             }}
             className={isLeftChoice ? "choice-number-right" : "choice-number-left"}
