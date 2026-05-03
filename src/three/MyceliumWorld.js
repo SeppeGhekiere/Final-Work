@@ -15,6 +15,7 @@ const FORWARD_SPEED = 0.05;
 const SPATIAL_WAVE = true;
 const PULSE_ENABLED = true;
 const FLOOR_MAX_Z = 40;
+const GROW_DURATION = 1.5;
 
 export default class MyceliumWorld {
 	constructor(container, getState) {
@@ -24,7 +25,7 @@ export default class MyceliumWorld {
 		this.scene = new THREE.Scene();
 		this.scene.background = new THREE.Color(0x050403);
 
-		this.scene.fog = new THREE.FogExp2(0x050403, 0.035);
+		this.scene.fog = new THREE.Fog(0x010100, 0.1, 10);
 
 		this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
 		this.camera.position.set(0, 0, 80);
@@ -57,6 +58,8 @@ export default class MyceliumWorld {
 				uCameraPos: { value: new THREE.Vector3() },
 				uSpatialWave: { value: SPATIAL_WAVE ? 1 : 0 },
 				uPulse: { value: PULSE_ENABLED ? 1 : 0 },
+				uGrowth: { value: 1.0 },
+				uRedPulseTime: { value: -1.0 },
 			},
 
 			vertexShader: `
@@ -83,12 +86,16 @@ export default class MyceliumWorld {
 				uniform vec3 uCameraPos;
 				uniform float uSpatialWave;
 				uniform float uPulse;
+				uniform float uGrowth;
+				uniform float uRedPulseTime;
 
 				varying float vAlong;
 				varying float vDepth;
 				varying vec3 vWorldPosition;
 
 				void main() {
+					if (vAlong > uGrowth) discard;
+					
 					float dist = length(vWorldPosition - uCameraPos);
 					float maskRadius = 6.0;
 					if (dist < maskRadius) discard;
@@ -115,8 +122,23 @@ export default class MyceliumWorld {
 							pulseBand = smoothstep(0.0, 0.15, pulse) * smoothstep(1.0, 0.85, pulse);
 						}
 						
-						vec3 highlight = vec3(0.7, 0.35, 0.15);
-						color = mix(base, highlight, pulseBand);
+						vec3 pulseColor = vec3(0.7, 0.35, 0.15);
+						color = mix(base, pulseColor, pulseBand);
+					}
+					
+					float redPulseBand = 0.0;
+					if (uRedPulseTime > 0.0) {
+						float redElapsed = time - uRedPulseTime;
+						if (redElapsed < 5.0) {
+							float cameraZ = uCameraPos.z;
+							float redWavefrontZ = cameraZ + redElapsed * 20.0;
+							float distFromRed = vWorldPosition.z - redWavefrontZ;
+							float redPulseLength = 15.0;
+							float redEdge = 1.0;
+							redPulseBand = smoothstep(0.0, redEdge, distFromRed) * (1.0 - smoothstep(0.0, redEdge, distFromRed - redPulseLength));
+							vec3 red = vec3(1.0, 0.0, 0.0);
+							color = mix(color, red, redPulseBand);
+						}
 					}
 					
 					float depthFade = exp(-vDepth * 0.025);
@@ -135,8 +157,12 @@ export default class MyceliumWorld {
 
 		this.frame = 0;
 
+		this._boundResize = () => this.handleResize();
+		this._animFrameId = null;
+		this._running = true;
+
 		this.handleResize();
-		window.addEventListener("resize", () => this.handleResize());
+		window.addEventListener("resize", this._boundResize);
 
 		this.animate();
 	}
@@ -237,6 +263,7 @@ export default class MyceliumWorld {
 	}
 
 	createSolidTubeGeometry(curve, radius, reverseDirection) {
+		// console.log('createSolidTubeGeometry STARTING with radius:', radius, 'reverseDirection:', reverseDirection);
 		const vertices = [];
 		const indices = [];
 		const along = [];
@@ -266,7 +293,6 @@ export default class MyceliumWorld {
 				along.push(alongValue);
 
 				if (step < TUBE_SEGMENTS) {
-					const currOuter = stepStartIdx + 1 + c;
 					const nextOuter = (step + 1) * (TUBE_RADIAL_SEGMENTS + 1) + 1 + c;
 					const nextOuterNext = (step + 1) * (TUBE_RADIAL_SEGMENTS + 1) + 1 + ((c + 1) % TUBE_RADIAL_SEGMENTS);
 
@@ -297,23 +323,52 @@ export default class MyceliumWorld {
 	generateNest() {
 		const snapPoints = [];
 
-		for (let i = 0; i < CURVE_COUNT; i++) {
-			const { curve, startPoint, mid25, mid50, mid75, endPoint } = this.createCurve(snapPoints);
+		try {
+			for (let i = 0; i < CURVE_COUNT; i++) {
 
-			const radius = 0.7 + Math.sin(i * 0.3) * 0.1;
-			const reverseDirection = endPoint.z < startPoint.z;
-			const geometry = this.createSolidTubeGeometry(curve, radius, reverseDirection);
+				let curve, startPoint, mid25, mid50, mid75, endPoint, radius, reverseDirection, geometry, mesh;
 
-			const mesh = new THREE.Mesh(geometry, this.connectionMaterial.clone());
+				try {
+					({ curve, startPoint, mid25, mid50, mid75, endPoint } = this.createCurve(snapPoints));
+				} catch (e) {
+					console.error("ERROR at createCurve, i:", i, e);
+					throw e;
+				}
 
-			this.group.add(mesh);
-			this.tubes.push(mesh);
+				try {
+					radius = 0.7 + Math.sin(i * 0.3) * 0.1;
+					reverseDirection = endPoint.z < startPoint.z;
+					geometry = this.createSolidTubeGeometry(curve, radius, reverseDirection);
+					if (!geometry) {
+						console.error("createSolidTubeGeometry returned null/undefined at i:", i);
+						continue;
+					}
+				} catch (e) {
+					console.error("ERROR at createSolidTubeGeometry, i:", i, e);
+					throw e;
+				}
 
-			snapPoints.push(startPoint);
-			snapPoints.push(mid25);
-			snapPoints.push(mid50);
-			snapPoints.push(mid75);
-			snapPoints.push(endPoint);
+				try {
+					mesh = new THREE.Mesh(geometry, this.connectionMaterial.clone());
+					mesh.userData.spawnTime = this.time;
+					mesh.userData.targetRadius = radius;
+					mesh.userData.maxZ = endPoint.z;
+				} catch (e) {
+					console.error("ERROR at Mesh creation, i:", i, e);
+					throw e;
+				}
+
+				this.group.add(mesh);
+				this.tubes.push(mesh);
+
+				snapPoints.push(startPoint);
+				snapPoints.push(mid25);
+				snapPoints.push(mid50);
+				snapPoints.push(mid75);
+				snapPoints.push(endPoint);
+			}
+		} catch (e) {
+			console.error("CRASH in generateNest:", e);
 		}
 	}
 
@@ -331,6 +386,11 @@ export default class MyceliumWorld {
 			const geometry = this.createSolidTubeGeometry(curve, radius, reverseDirection);
 
 			const mesh = new THREE.Mesh(geometry, this.connectionMaterial.clone());
+			mesh.userData.spawnTime = this.time;
+			mesh.userData.targetRadius = radius;
+			mesh.userData.maxZ = endPoint.z;
+			mesh.userData.startZ = startPoint.z;
+			mesh.userData.endZ = endPoint.z;
 
 			this.group.add(mesh);
 			this.tubes.push(mesh);
@@ -414,8 +474,7 @@ export default class MyceliumWorld {
 		const removeThreshold = cameraZ - REMOVE_BEHIND;
 
 		this.tubes = this.tubes.filter((mesh) => {
-			const box = new THREE.Box3().setFromObject(mesh);
-			const tubeZ = box.max.z;
+			const tubeZ = mesh.userData.maxZ || 0;
 
 			if (tubeZ < removeThreshold) {
 				this.group.remove(mesh);
@@ -447,16 +506,27 @@ export default class MyceliumWorld {
 	updateShaders() {
 		const camPos = this.camera.position;
 
+		if (this.tubes.length === 0) {
+			return;
+		}
+
 		this.tubes.forEach((mesh) => {
 			if (mesh && mesh.material) {
 				mesh.material.uniforms.time.value = this.time;
 				mesh.material.uniforms.uCameraPos.value.copy(camPos);
+
+				if (mesh.userData.spawnTime !== undefined) {
+					const age = this.time - mesh.userData.spawnTime;
+					const growth = Math.min(age / GROW_DURATION, 1.0);
+					mesh.material.uniforms.uGrowth.value = growth;
+				}
 			}
 		});
 	}
 
 	animate() {
-		requestAnimationFrame(() => this.animate());
+		if (!this._running) return;
+		this._animFrameId = requestAnimationFrame(() => this.animate());
 
 		this.frame++;
 
@@ -473,7 +543,11 @@ export default class MyceliumWorld {
 	}
 
 	destroy() {
-		window.removeEventListener("resize", this.handleResize);
+		this._running = false;
+		if (this._animFrameId) {
+			cancelAnimationFrame(this._animFrameId);
+		}
+		window.removeEventListener("resize", this._boundResize);
 
 		this.tubes.forEach((mesh) => {
 			if (mesh) {
@@ -509,5 +583,14 @@ export default class MyceliumWorld {
 
 	getPulse() {
 		return this.connectionMaterial.uniforms.uPulse.value > 0.5;
+	}
+
+	// eslint-disable-next-line no-unused-vars
+	triggerPulse(_color) {
+		const t = this.time;
+		this.tubes.forEach((mesh) => {
+			mesh.material.uniforms.uRedPulseTime.value = t;
+		});
+		this.connectionMaterial.uniforms.uRedPulseTime.value = t;
 	}
 }

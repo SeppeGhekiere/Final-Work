@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import * as THREE from "three";
 import { scenes } from "./scenes/scenes";
 import { getEffects } from "./engine/effects";
 import { applyChoice } from "./engine/sceneEngine";
@@ -10,7 +11,8 @@ import MyceliumLayer from "./ui/MyceliumLayer";
 
 export default function App() {
   const [isDialogueFinished, setIsDialogueFinished] = useState(false);
-  const [_, forceUpdate] = useState(0);
+  const [, rerender] = useState(0);
+  const myceliumRef = useRef(null);
 
   // Sync React state from shared gameState
   const state = gameState;
@@ -28,7 +30,8 @@ export default function App() {
     const newState = applyChoice(gameState, choice);
     updateState(newState);
     setIsDialogueFinished(false);
-    forceUpdate(n => n + 1); // trigger re-render
+    rerender(n => n + 1);
+    myceliumRef.current?.triggerPulse(new THREE.Vector3(1.0, 0.0, 0.0));
   };
 
   return (
@@ -39,7 +42,7 @@ export default function App() {
         transform: `scale(${1 - effects.blur * 0.002})`
       }}
     >
-      <MyceliumLayer />
+      <MyceliumLayer ref={myceliumRef} />
 
       <div className="story-container">
         <DialogueBox

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import useTypewriter from "../hooks/useTypewriter";
 
 export default function DialogueBox({ lines, effects, onFinish }) {
@@ -6,11 +6,18 @@ export default function DialogueBox({ lines, effects, onFinish }) {
   const { displayedLines, currentText, isFinished } =
     useTypewriter(lines, speed);
 
+  const hasCalledOnFinish = useRef(false);
+
   useEffect(() => {
-    if (isFinished && onFinish) {
-      onFinish();
+    if (isFinished && !hasCalledOnFinish.current) {
+      hasCalledOnFinish.current = true;
+      onFinish?.();
     }
   }, [isFinished, onFinish]);
+
+  useEffect(() => {
+    hasCalledOnFinish.current = false;
+  }, [lines]);
 
   return (
     <div className="dialogue-box">

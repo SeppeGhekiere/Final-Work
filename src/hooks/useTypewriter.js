@@ -1,17 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function useTypewriter(lines, speed = 30) {
   const [displayedLines, setDisplayedLines] = useState([]);
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [currentText, setCurrentText] = useState("");
   const [charIndex, setCharIndex] = useState(0);
+  const [linesKey, setLinesKey] = useState(0);
 
-  // Reset state when lines change (new scene)
+  const prevLinesRef = useRef(lines);
+
   useEffect(() => {
-    setDisplayedLines([]);
-    setCurrentLineIndex(0);
-    setCurrentText("");
-    setCharIndex(0);
+    if (prevLinesRef.current !== lines) {
+      prevLinesRef.current = lines;
+      setDisplayedLines([]);
+      setCurrentLineIndex(0);
+      setCurrentText("");
+      setCharIndex(0);
+      setLinesKey(k => k + 1);
+    }
   }, [lines]);
 
   useEffect(() => {
@@ -19,7 +25,6 @@ export default function useTypewriter(lines, speed = 30) {
 
     const line = lines[currentLineIndex];
 
-    // Handle empty lines: skip typing, just wait
     if (line.text.length === 0) {
       const timeout = setTimeout(() => {
         setDisplayedLines(prev => [...prev, ""]);
@@ -39,7 +44,6 @@ export default function useTypewriter(lines, speed = 30) {
 
       return () => clearTimeout(timeout);
     } else {
-      // line finished → wait pause, then next line
       const timeout = setTimeout(() => {
         setDisplayedLines(prev => [...prev, line.text]);
         setCurrentText("");
@@ -49,11 +53,13 @@ export default function useTypewriter(lines, speed = 30) {
 
       return () => clearTimeout(timeout);
     }
-  }, [charIndex, currentLineIndex, lines, speed]);
+  }, [charIndex, currentLineIndex, lines, speed, linesKey]);
+
+  const isFinished = currentLineIndex >= lines.length;
 
   return {
     displayedLines,
     currentText,
-    isFinished: currentLineIndex >= lines.length
+    isFinished,
   };
 }

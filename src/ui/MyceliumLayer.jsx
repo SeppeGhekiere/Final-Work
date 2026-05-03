@@ -1,22 +1,26 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import MyceliumWorld from "../three/MyceliumWorld";
 import { gameState } from "../state/gameState";
 
-export default function MyceliumLayer() {
-  const ref = useRef(null);
+const MyceliumLayer = forwardRef(function MyceliumLayer(props, ref) {
+  const containerRef = useRef(null);
   const worldRef = useRef(null);
 
   useEffect(() => {
     worldRef.current = new MyceliumWorld(
-      ref.current,
+      containerRef.current,
       () => gameState
     );
     return () => worldRef.current?.destroy();
   }, []);
 
+  useImperativeHandle(ref, () => ({
+    triggerPulse: (color) => worldRef.current?.triggerPulse(color)
+  }));
+
   return (
     <div
-      ref={ref}
+      ref={containerRef}
       style={{
         position: "fixed",
         inset: 0,
@@ -25,4 +29,6 @@ export default function MyceliumLayer() {
       }}
     />
   );
-}
+});
+
+export default MyceliumLayer;
