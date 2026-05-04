@@ -5,36 +5,23 @@ export default function useTypewriter(lines, speed = 30) {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [currentText, setCurrentText] = useState("");
   const [charIndex, setCharIndex] = useState(0);
-  const [linesKey, setLinesKey] = useState(0);
 
-  const prevLinesRef = useRef(lines);
-
+  // Reset when lines change
+  const linesRef = useRef(lines);
   useEffect(() => {
-    if (prevLinesRef.current !== lines) {
-      prevLinesRef.current = lines;
+    if (linesRef.current !== lines) {
+      linesRef.current = lines;
       setDisplayedLines([]);
       setCurrentLineIndex(0);
       setCurrentText("");
       setCharIndex(0);
-      setLinesKey(k => k + 1);
     }
   }, [lines]);
 
   useEffect(() => {
-    if (!lines || currentLineIndex >= lines.length) return;
+    if (!lines || currentLineIndex >= lines.length || !lines[currentLineIndex]) return;
 
     const line = lines[currentLineIndex];
-
-    if (line.text.length === 0) {
-      const timeout = setTimeout(() => {
-        setDisplayedLines(prev => [...prev, ""]);
-        setCurrentText("");
-        setCharIndex(0);
-        setCurrentLineIndex(prev => prev + 1);
-      }, line.pauseAfter || 500);
-
-      return () => clearTimeout(timeout);
-    }
 
     if (charIndex < line.text.length) {
       const timeout = setTimeout(() => {
@@ -53,7 +40,7 @@ export default function useTypewriter(lines, speed = 30) {
 
       return () => clearTimeout(timeout);
     }
-  }, [charIndex, currentLineIndex, lines, speed, linesKey]);
+  }, [charIndex, currentLineIndex, lines, speed]);
 
   const isFinished = currentLineIndex >= lines.length;
 
