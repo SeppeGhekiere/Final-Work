@@ -12,7 +12,9 @@ export default function ChoiceList({ choices, onSelect, effects }) {
   const [choicesEnabled, setChoicesEnabled] = useState(false);
   const [reflectedIndices, setReflectedIndices] = useState(new Set());
   const choiceStability = effects?.choiceStability ?? 1;
+  const choiceFade = effects?.choiceFade ?? 0;
   const inputDelay = effects?.inputDelay ?? 0;
+  const disappearChance = effects?.disappearChance ?? 0;
 
   // Resistance effects
   const autoSelect = effects?.autoSelect ?? false;
@@ -109,6 +111,20 @@ export default function ChoiceList({ choices, onSelect, effects }) {
     }
   }, [choices, choiceStability, effects.choiceInstability]);
 
+  // Handle disappear chance (memory loss effect)
+  useEffect(() => {
+    if (disappearChance > 0 && choices.length > 0) {
+      const timer = setTimeout(() => {
+        choices.forEach((_, i) => {
+          if (Math.random() < disappearChance) {
+            setHiddenChoices(prev => new Set([...prev, i]));
+          }
+        });
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [choices, disappearChance]);
+
   // Filter to get visible choices with their correct positions
   const visibleChoices = choices
     .map((choice, i) => ({ choice, originalIndex: i }))
@@ -148,7 +164,7 @@ export default function ChoiceList({ choices, onSelect, effects }) {
               animationTimingFunction: "ease-in-out",
               animationIterationCount: "infinite",
               animationDelay: `-${visibleIndex * 0.7}s`,
-              opacity: isDisabled ? 0.3 : (choicesEnabled ? 1 : 0.5),
+              opacity: isDisabled ? 0.3 : (choicesEnabled ? Math.max(0.1, 1 - choiceFade) : 0.5),
               cursor: isDisabled ? "not-allowed" : (choicesEnabled ? "pointer" : "not-allowed"),
             }}
             className={`${isLeftChoice ? "choice-number-right" : "choice-number-left"}${isReflected ? " reflected-available" : ""}`}

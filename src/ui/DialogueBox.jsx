@@ -4,6 +4,7 @@ import useTypewriter from "../hooks/useTypewriter";
 export default function DialogueBox({ lines, effects, onFinish }) {
   const speed = Math.max(20, 30 + (effects?.textDelay || 0));
   const textSpeed = effects?.textSpeed || 1;
+  const textJitter = effects?.textJitter || 0;
   const dialogueSkip = effects?.dialogueSkip || 0;
   const repeatDialogue = effects?.repeatDialogue || false;
   const [timeJump, setTimeJump] = useState(false);
@@ -68,6 +69,11 @@ export default function DialogueBox({ lines, effects, onFinish }) {
         const age = totalLines - 1 - i;
         const decay = effects?.memoryDecay ?? 0;
         const lineOpacity = Math.min(1, 1 - age * decay * 0.3);
+        
+        // Text jitter effect - static offset based on line index
+        const jitterOffset = textJitter > 0 
+          ? Math.sin(i * 1.5) * textJitter * 5 
+          : 0;
 
         return (
           <p
@@ -75,6 +81,7 @@ export default function DialogueBox({ lines, effects, onFinish }) {
             style={{
               opacity: Math.max(lineOpacity, 0.05),
               transition: "opacity 1s ease",
+              transform: `translateX(${jitterOffset}px)`,
             }}
           >
             {line}
