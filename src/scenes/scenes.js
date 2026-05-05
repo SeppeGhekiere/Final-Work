@@ -1,295 +1,307 @@
-// scenes.js - Reworked with branching paths and endings
 export const scenes = {
 	scene1: {
 		id: "scene1",
 		lines: [
-			{ text: "It's quiet.", pauseAfter: 500 },
-			{ text: "Not in a good way.", pauseAfter: 600 },
-			{ text: "Just… nothing happening.", pauseAfter: 800 },
-			{ text: "There was something you were going to do.", pauseAfter: 900 },
-			{ text: "…you can't quite remember what.", pauseAfter: 1000 },
-			{ text: "Your phone lights up.", pauseAfter: 700 },
-		],
-		choices: [
-			{ text: "Check it quickly", effects: { time_loss: 2 }, next: "scene2a" },
-			{ text: "Ignore it", effects: { tension: 1 }, next: "scene2b" },
-			{ text: "Turn on the TV", effects: { distraction: 1, time_loss: 1 }, next: "scene2b" },
-			{ text: "Try to remember", effects: { awareness: 1, tension: -1 }, next: "scene2b" },
-		],
-	},
-
-	scene2a: {
-		id: "scene2a",
-		lines: [
-			{ text: "Just a second.", pauseAfter: 600 },
-			{ text: "You unlock it without thinking.", pauseAfter: 800 },
-			{ text: "A post. A video.", pauseAfter: 900 },
-			{ text: "Nothing important.", pauseAfter: 800 },
-			{ text: "Still… you keep looking.", pauseAfter: 0 },
-		],
-		choices: [
-			{ text: "Scroll", effects: { time_loss: 2 }, next: "scene3a" },
-			{ text: "Check something specific", effects: { awareness: 1, tension: 1 }, next: "scene3a" },
-			{ text: "Pause for a second", effects: { tension: 1, time_loss: 1 }, next: "scene3b" },
-			{ text: "Lock the phone", effects: { resistance: 2, tension: -1 }, next: "scene3b" },
-		],
-	},
-
-	scene2b: {
-		id: "scene2b",
-		lines: [
-			{ text: "You don't pick it up.", pauseAfter: 700 },
-			{ text: "Not yet.", pauseAfter: 800 },
-			{ text: "", pauseAfter: 500 },
-			{ text: "But it stays there.", pauseAfter: 900 },
-			{ text: "Waiting.", pauseAfter: 900 },
-			{ text: "You think about it anyway.", pauseAfter: 0 },
-		],
-		choices: [
-			{ text: "Just check quickly", effects: { time_loss: 2, tension: 1 }, next: "scene3a" },
-			{ text: "Ignore it again", effects: { tension: 2, awareness: 1 }, next: "scene3b" },
-			{ text: "Do something else", effects: { awareness: 1, tension: -1 }, next: "scene3b" },
-			{ text: "Pick it up without unlocking", effects: { tension: 1, time_loss: 1 }, next: "scene3a" },
-		],
-	},
-
-	scene3a: {
-		id: "scene3a",
-		lines: [
-			{ text: "You're in it now.", pauseAfter: 800 },
-			{ text: "Scrolling without really seeing.", pauseAfter: 1000 },
-			{ text: "Something passes by.", pauseAfter: 900 },
-			{ text: "Then something else.", pauseAfter: 900 },
-			{ text: "You pause.", pauseAfter: 800 },
-			{ text: "What was the last thing you just saw?", pauseAfter: 0 },
-		],
-		choices: [
-			{ text: "Keep scrolling", effects: { time_loss: 3, tension: 1 }, next: "scene4" },
-			{ text: "Scroll back up", effects: { tension: 1, awareness: 1 }, next: "scene4" },
-			{ text: "Try to remember", effects: { awareness: 2, time_loss: 1 }, next: "scene4" },
-			{ text: "Close the app", effects: { resistance: 2, tension: -1 }, next: "scene4" },
-		],
-	},
-
-	scene3b: {
-		id: "scene3b",
-		lines: [
-			{ text: "You try to focus on something else.", pauseAfter: 900 },
-			{ text: "It doesn't really stick.", pauseAfter: 900 },
-			{ text: "", pauseAfter: 600 },
-			{ text: "Your mind drifts back.", pauseAfter: 1000 },
-			{ text: "To the phone.", pauseAfter: 900 },
-			{ text: "You don't remember deciding to pick it up.", pauseAfter: 0 },
-		],
-		choices: [
-			{ text: "Open it", effects: { time_loss: 2, tension: 1 }, next: "scene4" },
-			{ text: "Wait a bit longer", effects: { tension: 2, awareness: 1 }, next: "scene4" },
-			{ text: "Try to focus", effects: { awareness: 2, tension: -1 }, next: "scene4" },
-			{ text: "Pick it up anyway", effects: { time_loss: 2, tension: 1 }, next: "scene4" },
-		],
-	},
-
-	scene4: {
-		id: "scene4",
-		lines: [
-			{ text: "One thing leads to another.", pauseAfter: 800 },
-			{ text: "You're not really choosing anymore.", pauseAfter: 1000 },
-			{ text: "Just… reacting.", pauseAfter: 1200 },
+			{ text: "Think back.", pauseAfter: 700 },
+			{ text: "The last time you picked up your phone…", pauseAfter: 900 },
+			{ text: "Not because you needed to.", pauseAfter: 800 },
+			{ text: "Just… because.", pauseAfter: 1000 },
+			{ text: "", pauseAfter: 700 },
+			{ text: "Five minutes later—", pauseAfter: 900 },
+			{ text: "where were you?", pauseAfter: 1000 },
 			{ text: "", pauseAfter: 800 },
-			{ text: "It doesn't feel like long.", pauseAfter: 1200 },
-			{ text: "But it is.", pauseAfter: 0 },
+			{ text: "This isn’t where it starts.", pauseAfter: 900 },
+			{ text: "Scrolling comes later.", pauseAfter: 900 },
+			{ text: "It starts here.", pauseAfter: 900 },
+			{ text: "", pauseAfter: 700 },
+			{ text: "What are you avoiding right now?", pauseAfter: 0 },
 		],
 		choices: [
-			{ text: "Keep going", effects: { time_loss: 3, tension: 1 }, next: "scene6a" },
-			{ text: "Stop now", effects: { resistance: 2, tension: -1 }, next: "scene6b" },
-			{ text: "Just one more", effects: { time_loss: 3, tension: 1 }, next: "scene6a" },
-			{ text: "Put it down", effects: { awareness: 2, time_loss: 1 }, next: "scene6b" },
+			{ text: "Something I should be doing", effects: { tension: 2 }, next: "scene2_procrastination" },
+			{ text: "Something I don’t want to feel", effects: { tension: 2, awareness: 1 }, next: "scene2_emotion" },
+			{ text: "Nothing… just bored", effects: { awareness: 1 }, next: "scene2_boredom" },
+			{ text: "I’m just tired", effects: { tension: 1 }, next: "scene2_exhaustion" },
 		],
 	},
 
-	scene6a: {
-		id: "scene6a",
+	// ---------------- PROCRASTINATION ----------------
+
+	scene2_procrastination: {
+		id: "scene2_procrastination",
+		lines: [
+			{ text: "The task is still there.", pauseAfter: 900 },
+			{ text: "Waiting.", pauseAfter: 900 },
+			{ text: "", pauseAfter: 700 },
+			{ text: "You know you should start.", pauseAfter: 1000 },
+			{ text: "It’s not even that hard.", pauseAfter: 900 },
+			{ text: "Just… heavy.", pauseAfter: 1100 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "“I’ll just check something quickly first.”", pauseAfter: 1200 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "You unlock your phone.", pauseAfter: 900 },
+			{ text: "You don’t even remember deciding to.", pauseAfter: 0 },
+		],
+		choices: [
+			{ text: "Check one thing quickly", effects: { time_loss: 2 }, next: "scene3_scroll" },
+			{ text: "Stare at the task instead", effects: { tension: 2, awareness: 1 }, next: "scene3_resist" },
+			{ text: "Open something random", effects: { time_loss: 3 }, next: "scene3_scroll" },
+			{ text: "Start a tiny part of the task", effects: { resistance: 2 }, next: "scene3_resist" },
+		],
+	},
+
+	// ---------------- EMOTIONAL ----------------
+
+	scene2_emotion: {
+		id: "scene2_emotion",
+		lines: [
+			{ text: "Something feels off.", pauseAfter: 900 },
+			{ text: "You don’t really want to sit with it.", pauseAfter: 1100 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "It would take effort to figure out why.", pauseAfter: 1100 },
+			{ text: "And you’re not sure you want the answer.", pauseAfter: 1100 },
+			{ text: "", pauseAfter: 900 },
+			{ text: "So you reach for something easier.", pauseAfter: 1000 },
+			{ text: "Something that fills the space.", pauseAfter: 0 },
+		],
+		choices: [
+			{ text: "Scroll to distract myself", effects: { time_loss: 3 }, next: "scene3_scroll" },
+			{ text: "Try to name the feeling", effects: { awareness: 2, tension: 2 }, next: "scene3_resist" },
+			{ text: "Open something loud/fast", effects: { time_loss: 2 }, next: "scene3_scroll" },
+			{ text: "Sit in silence for a moment", effects: { resistance: 2 }, next: "scene3_resist" },
+		],
+	},
+
+	// ---------------- BOREDOM ----------------
+
+	scene2_boredom: {
+		id: "scene2_boredom",
+		lines: [
+			{ text: "Nothing is happening.", pauseAfter: 1000 },
+			{ text: "No urgency.", pauseAfter: 900 },
+			{ text: "No stimulation.", pauseAfter: 1000 },
+			{ text: "", pauseAfter: 900 },
+			{ text: "Just… space.", pauseAfter: 1100 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "Your brain doesn’t like that.", pauseAfter: 1000 },
+			{ text: "It wants something.", pauseAfter: 1000 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "Anything.", pauseAfter: 0 },
+		],
+		choices: [
+			{ text: "Open my phone", effects: { time_loss: 2 }, next: "scene3_scroll" },
+			{ text: "Look around instead", effects: { awareness: 2 }, next: "scene3_resist" },
+			{ text: "Scroll out of habit", effects: { time_loss: 3 }, next: "scene3_scroll" },
+			{ text: "Stay with the boredom", effects: { resistance: 2 }, next: "scene3_resist" },
+		],
+	},
+
+	// ---------------- EXHAUSTION ----------------
+
+	scene2_exhaustion: {
+		id: "scene2_exhaustion",
+		lines: [
+			{ text: "You’re tired.", pauseAfter: 900 },
+			{ text: "The kind of tired that doesn’t go away quickly.", pauseAfter: 1100 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "You don’t want to think.", pauseAfter: 900 },
+			{ text: "You don’t want effort.", pauseAfter: 1000 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "You just want something easy.", pauseAfter: 1000 },
+			{ text: "Something that feels like rest.", pauseAfter: 0 },
+		],
+		choices: [
+			{ text: "Watch something to relax", effects: { time_loss: 3 }, next: "scene3_scroll" },
+			{ text: "Try to sleep", effects: { resistance: 2 }, next: "scene3_resist" },
+			{ text: "Scroll mindlessly", effects: { time_loss: 3 }, next: "scene3_scroll" },
+			{ text: "Put the phone away", effects: { awareness: 2 }, next: "scene3_resist" },
+		],
+	},
+
+	// ---------------- MERGED PATHS ----------------
+
+	scene3_scroll: {
+		id: "scene3_scroll",
+		lines: [
+			{ text: "Just a quick look.", pauseAfter: 800 },
+			{ text: "", pauseAfter: 600 },
+			{ text: "A video.", pauseAfter: 900 },
+			{ text: "Another.", pauseAfter: 800 },
+			{ text: "Something else.", pauseAfter: 900 },
+			{ text: "", pauseAfter: 700 },
+			{ text: "You’re not choosing anymore.", pauseAfter: 1000 },
+			{ text: "You’re reacting.", pauseAfter: 0 },
+		],
+		choices: [
+			{ text: "Keep going", effects: { time_loss: 3 }, next: "scene4_loop" },
+			{ text: "Scroll faster", effects: { time_loss: 2, awareness: -1 }, next: "scene4_loop" },
+			{ text: "Pause for a second", effects: { awareness: 1 }, next: "scene4_reflect" },
+			{ text: "Try to stop", effects: { resistance: 2 }, next: "scene4_reflect" },
+		],
+	},
+
+	scene3_resist: {
+		id: "scene3_resist",
+		lines: [
+			{ text: "You hesitate.", pauseAfter: 900 },
+			{ text: "It’s uncomfortable.", pauseAfter: 1000 },
+			{ text: "", pauseAfter: 700 },
+			{ text: "Doing nothing feels harder than scrolling.", pauseAfter: 1100 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "Your mind drifts back.", pauseAfter: 1000 },
+			{ text: "To the phone.", pauseAfter: 0 },
+		],
+		choices: [
+			{ text: "Give in and check", effects: { time_loss: 2 }, next: "scene4_loop" },
+			{ text: "Wait a bit longer", effects: { resistance: 2 }, next: "scene4_reflect" },
+			{ text: "Think about why", effects: { awareness: 2 }, next: "scene4_reflect" },
+			{ text: "Open it anyway", effects: { time_loss: 2 }, next: "scene4_loop" },
+		],
+	},
+
+	// ---------------- LOOP INTENSIFIES ----------------
+
+	scene4_loop: {
+		id: "scene4_loop",
 		lines: [
 			{ text: "Time passes.", pauseAfter: 1200 },
-			{ text: "You don't notice when.", pauseAfter: 1000 },
+			{ text: "You don’t notice when.", pauseAfter: 1100 },
 			{ text: "", pauseAfter: 800 },
-			{ text: "It all blends together.", pauseAfter: 1100 },
-			{ text: "Nothing really sticks.", pauseAfter: 0 },
+			{ text: "Nothing really sticks.", pauseAfter: 1000 },
+			{ text: "But you keep going.", pauseAfter: 0 },
 		],
 		choices: [
-			{ text: "Keep scrolling", effects: { time_loss: 3, tension: 1 }, next: "scene7a" },
-			{ text: "Check the time", effects: { awareness: 1, time_loss: 1 }, next: "scene7b" },
-			{ text: "Scroll faster", effects: { time_loss: 2, awareness: -1 }, next: "scene7a" },
-			{ text: "Try to stop", effects: { resistance: 2, tension: -1 }, next: "scene7b" },
+			{ text: "Keep scrolling", effects: { time_loss: 3 }, next: "scene5" },
+			{ text: "Check the time", effects: { awareness: 1 }, next: "scene5" },
+			{ text: "Just one more", effects: { time_loss: 3 }, next: "scene5" },
+			{ text: "Try to stop", effects: { resistance: 2 }, next: "scene5" },
 		],
 	},
 
-	scene6b: {
-		id: "scene6b",
+	scene4_reflect: {
+		id: "scene4_reflect",
 		lines: [
-			{ text: "You put it down.", pauseAfter: 900 },
-			{ text: "", pauseAfter: 700 },
-			{ text: "…", pauseAfter: 900 },
-			{ text: "Something pulls you back.", pauseAfter: 1100 },
-			{ text: "Not a thought.", pauseAfter: 900 },
-			{ text: "A habit.", pauseAfter: 0 },
-		],
-		choices: [
-			{ text: "Pick it up again", effects: { time_loss: 2, tension: 1 }, next: "scene7a" },
-			{ text: "Stay away", effects: { resistance: 3, tension: -1 }, next: "scene7b" },
-			{ text: "Just check quickly", effects: { time_loss: 2, tension: 1 }, next: "scene7a" },
-			{ text: "Distract yourself", effects: { awareness: 2, time_loss: 1 }, next: "scene7b" },
-		],
-	},
-
-	scene7a: {
-		id: "scene7a",
-		lines: [
-			{ text: "You're not deciding anymore.", pauseAfter: 1000 },
-			{ text: "It just… keeps going.", pauseAfter: 1100 },
+			{ text: "You pause.", pauseAfter: 1000 },
+			{ text: "Really pause.", pauseAfter: 1100 },
 			{ text: "", pauseAfter: 800 },
-			{ text: "You try to stop.", pauseAfter: 1000 },
-			{ text: "But you're already mid-scroll.", pauseAfter: 0 },
+			{ text: "Something feels off.", pauseAfter: 1000 },
+			{ text: "Like you’ve been here before.", pauseAfter: 0 },
 		],
 		choices: [
-			{ text: "Keep going", effects: { time_loss: 3, tension: 1 }, next: "scene8a" },
-			{ text: "Stop", effects: { resistance: 2, tension: -1 }, next: "scene8b" },
-			{ text: "Just one more", effects: { time_loss: 3, tension: 1 }, next: "scene8a" },
-			{ text: "Look away", effects: { awareness: 2, time_loss: 1 }, next: "scene8b" },
+			{ text: "Go back to scrolling", effects: { time_loss: 2 }, next: "scene5" },
+			{ text: "Sit with the feeling", effects: { awareness: 2 }, next: "scene5" },
+			{ text: "Put it down", effects: { resistance: 2 }, next: "scene5" },
+			{ text: "Ignore it", effects: { tension: 2 }, next: "scene5" },
 		],
 	},
 
-	scene7b: {
-		id: "scene7b",
-		lines: [
-			{ text: "You notice it clearly now.", pauseAfter: 1000 },
-			{ text: "The loop.", pauseAfter: 900 },
-			{ text: "The pull.", pauseAfter: 1000 },
-			{ text: "", pauseAfter: 800 },
-			{ text: "Knowing doesn't stop it.", pauseAfter: 0 },
-		],
-		choices: [
-			{ text: "Put it down properly", effects: { resistance: 3, tension: -1 }, next: "scene8b" },
-			{ text: "Check again", effects: { time_loss: 2, tension: 1 }, next: "scene8a" },
-			{ text: "Do something else", effects: { awareness: 2, time_loss: 1 }, next: "scene8b" },
-			{ text: "Ignore the feeling", effects: { tension: 2, awareness: 1 }, next: "scene8a" },
-		],
-	},
+	// ---------------- FINAL MERGE ----------------
 
-	scene8a: {
-		id: "scene8a",
+	scene5: {
+		id: "scene5",
 		lines: [
-			{ text: "It's automatic now.", pauseAfter: 1100 },
-			{ text: "You don't even question it.", pauseAfter: 1100 },
-			{ text: "", pauseAfter: 900 },
-			{ text: "You're just… here.", pauseAfter: 1000 },
-			{ text: "Scrolling.", pauseAfter: 0 },
-		],
-		choices: [
-			{ text: "Continue", effects: { time_loss: 3, tension: 1 }, next: "scene9" },
-			{ text: "Try to stop", effects: { resistance: 2, tension: -1 }, next: "scene9" },
-			{ text: "Just one more", effects: { time_loss: 3, tension: 1 }, next: "scene9" },
-			{ text: "Pause", effects: { awareness: 1, time_loss: 1 }, next: "scene9" },
-		],
-	},
-
-	scene8b: {
-		id: "scene8b",
-		lines: [
-			{ text: "You pause longer this time.", pauseAfter: 1100 },
-			{ text: "Really pause.", pauseAfter: 1000 },
-			{ text: "", pauseAfter: 900 },
-			{ text: "It feels strange.", pauseAfter: 1000 },
-			{ text: "Like something's missing.", pauseAfter: 0 },
-		],
-		choices: [
-			{ text: "Put it away", effects: { resistance: 3, tension: -1 }, next: "scene9" },
-			{ text: "Check again", effects: { time_loss: 2, tension: 1 }, next: "scene9" },
-			{ text: "Sit with it", effects: { awareness: 2, tension: -1 }, next: "scene9" },
-			{ text: "Distract yourself", effects: { tension: 2, awareness: 1 }, next: "scene9" },
-		],
-	},
-
-	scene9: {
-		id: "scene9",
-		lines: [
-			{ text: "You tell yourself it's fine.", pauseAfter: 900 },
+			{ text: "You tell yourself it’s fine.", pauseAfter: 900 },
 			{ text: "Just a habit.", pauseAfter: 900 },
 			{ text: "Something everyone does.", pauseAfter: 1000 },
-			{ text: "But it doesn't feel like that anymore.", pauseAfter: 0 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "But it doesn’t feel like that anymore.", pauseAfter: 0 },
 		],
 		choices: [
 			{ text: "Continue", effects: { time_loss: 3 }, next: "ending" },
 			{ text: "Try to stop", effects: { resistance: 3 }, next: "ending" },
-			{ text: "Do something else", effects: { awareness: 2 }, next: "ending" },
+			{ text: "Think about why", effects: { awareness: 2 }, next: "ending" },
 			{ text: "Just one more minute", effects: { time_loss: 2 }, next: "ending" },
 		],
 	},
-
-	endingA: {
-		id: "endingA",
+	scene6: {
+		id: "scene6",
 		lines: [
-			{ text: "It keeps going.", pauseAfter: 1000 },
-			{ text: "You stop noticing it.", pauseAfter: 1200 },
-			{ text: "Time passes.", pauseAfter: 1400 },
-			{ text: "You don't check it anymore.", pauseAfter: 1000 },
-			{ text: "Not really.", pauseAfter: 1000 },
-			{ text: "You're just here.", pauseAfter: 1200 },
+			{ text: "It doesn’t feel like long.", pauseAfter: 1000 },
+			{ text: "But it is.", pauseAfter: 1100 },
 			{ text: "", pauseAfter: 800 },
-			{ text: "Still scrolling.", pauseAfter: 0 },
-		],
-		choices: [
-			{ text: "Continue", effects: {}, next: "reflection" },
-		],
-	},
-
-	endingB: {
-		id: "endingB",
-		lines: [
-			{ text: "You notice it now.", pauseAfter: 1000 },
-			{ text: "Every time.", pauseAfter: 900 },
-			{ text: "The pull.", pauseAfter: 1000 },
-			{ text: "The habit.", pauseAfter: 1000 },
-			{ text: "The loop.", pauseAfter: 900 },
-			{ text: "You tell yourself to stop.", pauseAfter: 1100 },
-			{ text: "And then—", pauseAfter: 800 },
-			{ text: "you don't.", pauseAfter: 0 },
-		],
-		choices: [
-			{ text: "Continue", effects: {}, next: "reflection" },
-		],
-	},
-
-	endingC: {
-		id: "endingC",
-		lines: [
-			{ text: "You pause.", pauseAfter: 1200 },
-			{ text: "Longer this time.", pauseAfter: 1000 },
-			{ text: "It still pulls.", pauseAfter: 1100 },
-			{ text: "But you don't move.", pauseAfter: 1000 },
-			{ text: "Not immediately.", pauseAfter: 900 },
+			{ text: "Minutes blur together.", pauseAfter: 1100 },
+			{ text: "Or maybe longer.", pauseAfter: 1000 },
 			{ text: "", pauseAfter: 800 },
-			{ text: "That's new.", pauseAfter: 0 },
+			{ text: "You weren’t counting.", pauseAfter: 0 },
 		],
 		choices: [
-			{ text: "Continue", effects: {}, next: "reflection" },
+			{ text: "Keep scrolling", effects: { time_loss: 3 }, next: "scene7" },
+			{ text: "Check the time", effects: { awareness: 1 }, next: "scene7" },
+			{ text: "Switch to something else", effects: { time_loss: 2 }, next: "scene7" },
+			{ text: "Pause for a second", effects: { awareness: 1 }, next: "scene7" },
 		],
 	},
-
-	endingD: {
-		id: "endingD",
+	scene7: {
+		id: "scene7",
 		lines: [
-			{ text: "Something feels off.", pauseAfter: 1000 },
-			{ text: "You've felt it for a while now.", pauseAfter: 1200 },
-			{ text: "You don't like it.", pauseAfter: 1000 },
-			{ text: "But you don't stop either.", pauseAfter: 1100 },
+			{ text: "You hesitate.", pauseAfter: 1000 },
+			{ text: "Just for a second.", pauseAfter: 900 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "Something feels… off.", pauseAfter: 1100 },
+			{ text: "Like you’ve been here longer than you meant to.", pauseAfter: 1200 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "But you’re already mid-scroll.", pauseAfter: 0 },
+		],
+		choices: [
+			{ text: "Ignore it", effects: { time_loss: 3 }, next: "scene8" },
+			{ text: "Try to remember why you opened it", effects: { awareness: 2 }, next: "scene8" },
+			{ text: "Keep going anyway", effects: { time_loss: 3 }, next: "scene8" },
+			{ text: "Slow down", effects: { resistance: 1 }, next: "scene8" },
+		],
+	},
+	scene8: {
+		id: "scene8",
+		lines: [
+			{ text: "You notice the loop now.", pauseAfter: 1100 },
+			{ text: "The way one thing leads to another.", pauseAfter: 1200 },
 			{ text: "", pauseAfter: 900 },
-			{ text: "You just sit with it.", pauseAfter: 1000 },
-			{ text: "And then—", pauseAfter: 800 },
-			{ text: "you scroll again.", pauseAfter: 0 },
+			{ text: "It’s not random.", pauseAfter: 1000 },
+			{ text: "It keeps you here.", pauseAfter: 1100 },
+			{ text: "", pauseAfter: 900 },
+			{ text: "Knowing that…", pauseAfter: 1000 },
+			{ text: "doesn’t stop it.", pauseAfter: 0 },
 		],
 		choices: [
-			{ text: "Continue", effects: {}, next: "reflection" },
+			{ text: "Keep scrolling", effects: { time_loss: 3 }, next: "scene9" },
+			{ text: "Try to stop", effects: { resistance: 3 }, next: "scene9" },
+			{ text: "Just one more", effects: { time_loss: 2 }, next: "scene9" },
+			{ text: "Put the phone down", effects: { awareness: 2 }, next: "scene9" },
+		],
+	},
+	scene9: {
+		id: "scene9",
+		lines: [
+			{ text: "You tell yourself it’s fine.", pauseAfter: 900 },
+			{ text: "Everyone does this.", pauseAfter: 1000 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "It’s just a break.", pauseAfter: 1000 },
+			{ text: "Just a moment.", pauseAfter: 1000 },
+			{ text: "", pauseAfter: 800 },
+			{ text: "But it hasn’t been a moment.", pauseAfter: 1100 },
+			{ text: "Not for a while.", pauseAfter: 0 },
+		],
+		choices: [
+			{ text: "Continue", effects: { time_loss: 3 }, next: "scene10" },
+			{ text: "Stop now", effects: { resistance: 3 }, next: "scene10" },
+			{ text: "Think about why", effects: { awareness: 2 }, next: "scene10" },
+			{ text: "Just one more minute", effects: { time_loss: 2 }, next: "scene10" },
+		],
+	},
+	scene10: {
+		id: "scene10",
+		lines: [
+			{ text: "This is the moment.", pauseAfter: 1100 },
+			{ text: "You could stop here.", pauseAfter: 1200 },
+			{ text: "", pauseAfter: 900 },
+			{ text: "Or not.", pauseAfter: 1000 },
+			{ text: "", pauseAfter: 900 },
+			{ text: "It doesn’t feel like a big decision.", pauseAfter: 1100 },
+			{ text: "But it is.", pauseAfter: 0 },
+		],
+		choices: [
+			{ text: "Keep going", effects: { time_loss: 3 }, next: "ending" },
+			{ text: "Stop", effects: { resistance: 3 }, next: "ending" },
+			{ text: "Pause", effects: { awareness: 2 }, next: "ending" },
+			{ text: "Ignore the thought", effects: { tension: 2 }, next: "ending" },
 		],
 	},
 };

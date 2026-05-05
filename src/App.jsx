@@ -18,7 +18,7 @@ export default function App() {
   const [showDebug, setShowDebug] = useState(false);
   const [showGoodbye, setShowGoodbye] = useState(false);
   const [statIndicators, setStatIndicators] = useState([]);
-  const [prevStats, setPrevStats] = useState({ time_loss: 5, tension: 0, awareness: 5, resistance: 3 });
+  const [prevStats, setPrevStats] = useState({ time_loss: 0, tension: 0, awareness: 5, resistance: 3 });
   const [manualOverrides, setManualOverrides] = useState({
     blur: 0,
     sleepiness: 0,
@@ -115,25 +115,26 @@ export default function App() {
     // Track stat changes for indicators
     const statMessages = [];
     if (newState.time_loss > prevStats.time_loss) {
-      statMessages.push({ stat: "time_loss", text: "Time slips away...", color: "#886" });
+      statMessages.push({ stat: "time_loss", text: "Time slips away...", color: "#0f0", index: statMessages.length });
     }
     if (newState.tension > prevStats.tension) {
-      statMessages.push({ stat: "tension", text: "Tension builds...", color: "#a66" });
+      statMessages.push({ stat: "tension", text: "Tension builds...", color: "#0f0", index: statMessages.length });
     }
     if (newState.awareness < prevStats.awareness) {
-      statMessages.push({ stat: "awareness", text: "Clarity fades...", color: "#68a" });
+      statMessages.push({ stat: "awareness", text: "Clarity fades...", color: "#0f0", index: statMessages.length });
     }
     if (newState.awareness > prevStats.awareness) {
-      statMessages.push({ stat: "awareness", text: "You feel more aware...", color: "#6a8" });
+      statMessages.push({ stat: "awareness", text: "You feel more aware...", color: "#0f0", index: statMessages.length });
     }
     if (newState.resistance > prevStats.resistance) {
-      statMessages.push({ stat: "resistance", text: "You feel more aware of the pull...", color: "#6a8" });
+      statMessages.push({ stat: "resistance", text: "You feel more aware of the pull...", color: "#0f0", index: statMessages.length });
     }
     if (newState.resistance < prevStats.resistance) {
-      statMessages.push({ stat: "resistance", text: "The pull gets stronger...", color: "#a68" });
+      statMessages.push({ stat: "resistance", text: "The pull gets stronger...", color: "#0f0", index: statMessages.length });
     }
     
     if (statMessages.length > 0) {
+      console.log('App: setting statIndicators:', statMessages);
       setStatIndicators(statMessages.slice(0, 2));
       setTimeout(() => setStatIndicators([]), 2000);
     }
@@ -234,22 +235,12 @@ export default function App() {
         </div>
       )}
 
-      <MyceliumLayer ref={myceliumRef} blur={effects.blur} sleepiness={effects.sleepiness ?? 0} />
-
-      {/* Stat change indicators */}
-      {statIndicators.length > 0 && (
-        <div className="stat-indicators">
-          {statIndicators.map((indicator, i) => (
-            <div
-              key={i}
-              className="stat-indicator"
-              style={{ color: indicator.color }}
-            >
-              {indicator.text}
-            </div>
-          ))}
-        </div>
-      )}
+      <MyceliumLayer 
+        ref={myceliumRef} 
+        blur={effects.blur} 
+        sleepiness={effects.sleepiness ?? 0}
+        floatingTexts={statIndicators}
+      />
 
       <div className="story-container">
         <DialogueBox

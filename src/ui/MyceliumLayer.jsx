@@ -2,7 +2,7 @@ import { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import MyceliumWorld from "../three/MyceliumWorld";
 import { gameState } from "../state/gameState";
 
-const MyceliumLayer = forwardRef(function MyceliumLayer({ blur = 0, sleepiness = 0 }, ref) {
+const MyceliumLayer = forwardRef(function MyceliumLayer({ blur = 0, sleepiness = 0, floatingTexts = [] }, ref) {
   const containerRef = useRef(null);
   const worldRef = useRef(null);
 
@@ -14,8 +14,21 @@ const MyceliumLayer = forwardRef(function MyceliumLayer({ blur = 0, sleepiness =
     return () => worldRef.current?.destroy();
   }, []);
 
+  // Handle floating text indicators - trigger on ANY new text
+  useEffect(() => {
+    if (!floatingTexts || floatingTexts.length === 0) return;
+    
+    console.log('MyceliumLayer received floatingTexts:', floatingTexts);
+    
+    floatingTexts.forEach((item) => {
+      console.log('Calling addFloatingText:', item.text, item.color, 'index:', item.index);
+      worldRef.current?.addFloatingText(item.text, item.color, item.index || 0);
+    });
+  }, [floatingTexts]);
+
   useImperativeHandle(ref, () => ({
-    triggerPulse: (color) => worldRef.current?.triggerPulse(color)
+    triggerPulse: (color) => worldRef.current?.triggerPulse(color),
+    addFloatingText: (text, color) => worldRef.current?.addFloatingText(text, color)
   }));
 
   return (

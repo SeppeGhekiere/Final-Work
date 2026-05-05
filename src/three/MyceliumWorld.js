@@ -47,6 +47,8 @@ export default class MyceliumWorld {
 		this.totalDistance = 0;
 		this.lastGeneratedZ = 50;
 		this.snapPoints = [];
+		this.floatingTexts = [];
+		this.textureCache = {};
 
 		this.connectionMaterial = new THREE.ShaderMaterial({
 			depthWrite: true,
@@ -531,6 +533,7 @@ export default class MyceliumWorld {
 
 		this.updateCamera();
 		this.updateShaders();
+		this.updateFloatingTexts();
 
 		this.renderer.render(this.scene, this.camera);
 	}
@@ -591,5 +594,92 @@ export default class MyceliumWorld {
 			mesh.material.uniforms.uRedPulseTime.value = t;
 		});
 		this.connectionMaterial.uniforms.uRedPulseTime.value = t;
+	}
+
+	addFloatingText(text, color, index = 0) {
+		const cacheKey = text + '-' + color;
+		let texture = this.textureCache[cacheKey];
+		
+		if (!texture) {
+			const canvas = document.createElement('canvas');
+			const ctx = canvas.getContext('2d');
+			canvas.width = 768;
+			canvas.height = 128;
+			
+			ctx.fillStyle = color;
+			ctx.font = 'italic 36px sans-serif';
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'middle';
+			ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+			
+			texture = new THREE.CanvasTexture(canvas);
+			texture.minFilter = THREE.LinearFilter;
+			texture.magFilter = THREE.LinearFilter;
+			texture.needsUpdate = true;
+			this.textureCache[cacheKey] = texture;
+		}
+		
+		const material = new THREE.MeshBasicMaterial({
+			map: texture,
+			transparent: true,
+			opacity: 1,
+			side: THREE.DoubleSide,
+			depthWrite: false,
+			fog: false,
+		});
+		
+		const geometry = new THREE.PlaneGeometry(36, 6);
+		const mesh = new THREE.Mesh(geometry, material);
+		
+		// Position in front of camera (closer for visibility)
+		const spawnZ = this.camera.position.z + 15 + Math.random() * 10;
+		mesh.position.x = (Math.random() - 0.5) * 30;
+		mesh.position.y = (index * 7) + (Math.random() - 0.5) * 3;
+		mesh.position.z = spawnZ;
+		
+		// Billboard - make text face camera
+		mesh.lookAt(this.camera.position);
+		
+		mesh.userData.spawnTime = this.time;
+		mesh.userData.index = index;
+		mesh.userData.baseX = mesh.position.x;
+		mesh.userData.baseY = mesh.position.y;
+		mesh.userData.baseZ = this.camera.position.z;
+		
+		this.scene.add(mesh);
+		this.floatingTexts.push(mesh);
+	}
+
+	updateFloatingTexts() {
+		const camZ = this.camera.position.z;
+		
+		this.floatingTexts = this.floatingTexts.filter((mesh) => {
+			const age = this.time - mesh.userData.spawnTime;
+			const relativeZ = mesh.position.z - camZ;
+			
+			// Remove if too far behind camera or too old
+			if (relativeZ < -10 || age > 4.0) {
+				this.scene.remove(mesh);
+				mesh.geometry.dispose();
+				mesh.material.dispose();
+				return false;
+			}
+			
+			// Move with camera (stay in front), offset by index so multiple texts don't overlap
+			const index = mesh.userData.index || 0;
+			mesh.position.z = camZ + 15 + (age * 3);
+			mesh.position.x = mesh.userData.baseX + Math.sin(this.time * 2 + mesh.position.z * 0.1) * 1.5;
+			mesh.position.y = (index * 7) + Math.sin(this.time * 1.5 + index) * 1;
+			
+			// Billboard - keep facing camera
+			mesh.lookAt(this.camera.position);
+			
+			// Fade out
+			if (age > 2.5) {
+				mesh.material.opacity = 1 * (1 - (age - 2.5) / 1.5);
+			}
+			
+			return true;
+		});
 	}
 }
