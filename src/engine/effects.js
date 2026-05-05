@@ -112,8 +112,8 @@ export function getSimulationProfile(state) {
 	return "neutral";
 }
 
-export function getEffects(state) {
-	const profile = getSimulationProfile(state);
+export function getEffects(state, forcedProfile = null) {
+	const profile = forcedProfile || getSimulationProfile(state);
 	const sim = simulationProfiles[profile];
 	
 	// Get scene-specific overrides
