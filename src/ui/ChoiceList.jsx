@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { gameState } from "../state/gameState";
 
 export default function ChoiceList({ choices, onSelect, effects }) {
   const decorImages = [
@@ -126,9 +127,17 @@ export default function ChoiceList({ choices, onSelect, effects }) {
   }, [choices, disappearChance]);
 
   // Filter to get visible choices with their correct positions
-  const visibleChoices = choices
-    .map((choice, i) => ({ choice, originalIndex: i }))
-    .filter(({ originalIndex }) => !hiddenChoices.has(originalIndex));
+  // Also evaluate dynamic choice text
+  const visibleChoices = useMemo(() => {
+    return choices
+      .map((choice, i) => {
+        const text = typeof choice.text === "function" 
+          ? choice.text(gameState) 
+          : choice.text;
+        return { choice: { ...choice, displayText: text }, originalIndex: i };
+      })
+      .filter(({ originalIndex }) => !hiddenChoices.has(originalIndex));
+  }, [choices, hiddenChoices]);
 
   return (
     <div className="choices-grid">
@@ -169,7 +178,7 @@ export default function ChoiceList({ choices, onSelect, effects }) {
             }}
             className={`${isLeftChoice ? "choice-number-right" : "choice-number-left"}${isReflected ? " reflected-available" : ""}`}
           >
-            <span className="choice-text">{choice.text}</span>
+            <span className="choice-text">{choice.displayText}</span>
             <span className="choice-number">{number}</span>
           </button>
         );

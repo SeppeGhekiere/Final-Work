@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { scenes } from "./scenes/scenes";
 import { getEffects, getSceneOverride, getSimulationProfile } from "./engine/effects";
-import { applyChoice } from "./engine/sceneEngine";
+import { applyChoice, onSceneEnter } from "./engine/sceneEngine";
+import { getAugmentedLines } from "./engine/narrativeEngine";
 import { gameState, updateState } from "./state/gameState";
 
 import DialogueBox from "./ui/DialogueBox";
@@ -50,6 +51,7 @@ export default function App() {
       clearInterval(autoScrollRef.current);
       autoScrollRef.current = null;
     }
+    onSceneEnter();
   }, [gameState.sceneId]);
 
   const state = gameState;
@@ -77,6 +79,12 @@ export default function App() {
     inputDelay: computedEffects.inputDelay + (manualOverrides.inputDelay || 0),
     autoScroll: computedEffects.autoScroll || manualOverrides.autoScroll,
   };
+
+  // Memoize augmented lines to prevent dialogue restart
+  const fullLines = useMemo(
+    () => getAugmentedLines(scene, state),
+    [scene.id, state.time_loss, state.awareness, state.tension, state.resistance]
+  );
 
   // Apply tension effects to app container
   const appClassName = [
@@ -405,7 +413,7 @@ export default function App() {
 
       <div className="story-container">
         <DialogueBox
-          lines={scene.lines}
+          lines={fullLines}
           effects={effects}
           onFinish={() => setIsDialogueFinished(true)}
         />

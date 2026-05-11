@@ -1,6 +1,17 @@
 import { getEnding } from "./effects";
+import { recordChoice } from "../state/interactionState";
+import { processReaction, detectLoopPattern } from "./stateProcessor";
+import { recordReactionTime } from "../state/interactionState";
+
+export function onSceneEnter() {
+	recordReactionTime();
+}
 
 export function applyChoice(state, choice) {
+	recordChoice(choice.text);
+	processReaction(choice);
+	detectLoopPattern();
+
 	const newState = { ...state };
 
 	for (let key in choice.effects) {
@@ -11,11 +22,9 @@ export function applyChoice(state, choice) {
 		}
 	}
 
-	// Handle ending transition
 	if (choice.next === "ending") {
 		newState.sceneId = getEnding(newState);
 	} else if (choice.next === null || choice.next === undefined) {
-		// Stay on same scene - just refresh to show new effects
 		newState.sceneId = state.sceneId;
 	} else {
 		newState.sceneId = choice.next;
