@@ -1,15 +1,17 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import * as THREE from "three";
 import { scenes } from "./scenes/scenes";
 import { getEffects, getSceneOverride, getSimulationProfile } from "./engine/effects";
 import { applyChoice, onSceneEnter } from "./engine/sceneEngine";
 import { getAugmentedLines } from "./engine/narrativeEngine";
 import { gameState, updateState } from "./state/gameState";
+import { playRoomSound, ensureAudioContext } from "./hooks/useSound";
 
 import DialogueBox from "./ui/DialogueBox";
 import ChoiceList from "./ui/ChoiceList";
 import MyceliumLayer from "./ui/MyceliumLayer";
 import ReflectionScreen from "./ui/ReflectionScreen";
+import MetaOverlay from "./ui/MetaOverlay";
 
 const SCENE_KEYS = Object.keys(scenes);
 
@@ -18,6 +20,8 @@ export default function App() {
   const [rerenderKey, setRerenderKey] = useState(0);
   const [showDebug, setShowDebug] = useState(false);
   const [showGoodbye, setShowGoodbye] = useState(false);
+  const [metaState, setMetaState] = useState(null);
+  const realityCheckDoneRef = useRef(false);
   const [statIndicators, setStatIndicators] = useState([]);
   const [prevStats, setPrevStats] = useState({ time_loss: 0, tension: 0, awareness: 5, resistance: 3 });
   const [manualOverrides, setManualOverrides] = useState({
@@ -34,6 +38,7 @@ export default function App() {
   const [forcedProfile, setForcedProfile] = useState(null);
   const myceliumRef = useRef(null);
   const autoScrollRef = useRef(null);
+  const stopRoomRef = useRef(null);
 
   useEffect(() => {
     const handler = (e) => {
@@ -43,6 +48,17 @@ export default function App() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  // Persistent room ambience — starts on first user click (AudioContext guarantee)
+  useEffect(() => {
+    const handler = () => {
+      ensureAudioContext();
+      const stop = playRoomSound();
+      stopRoomRef.current = stop;
+    };
+    document.addEventListener("click", handler, { once: true });
+    return () => document.removeEventListener("click", handler);
   }, []);
 
   // Clean up autoScroll on scene change
@@ -79,6 +95,34 @@ export default function App() {
     inputDelay: computedEffects.inputDelay + (manualOverrides.inputDelay || 0),
     autoScroll: computedEffects.autoScroll || manualOverrides.autoScroll,
   };
+
+  const handleDialogueFinish = useCallback(() => {
+    if (gameState.sceneId === "scene5" && !realityCheckDoneRef.current) {
+      setMetaState("reality_check");
+      return;
+    }
+    setIsDialogueFinished(true);
+  }, []);
+
+  const handleMetaComplete = useCallback(() => {
+    setMetaState((current) => {
+      switch (current) {
+        case "reality_check":
+          realityCheckDoneRef.current = true;
+          setIsDialogueFinished(true);
+          return null;
+        case "personal_stats":
+          return "cold_facts";
+        case "cold_facts":
+          setIsDialogueFinished(false);
+          updateState({ sceneId: "reflection" });
+          setRerenderKey((n) => n + 1);
+          return null;
+        default:
+          return null;
+      }
+    });
+  }, []);
 
   // Memoize augmented lines to prevent dialogue restart
   const fullLines = useMemo(
@@ -122,6 +166,8 @@ export default function App() {
         <ReflectionScreen
           onRestart={() => {
             setShowGoodbye(false);
+            setMetaState(null);
+            realityCheckDoneRef.current = false;
             setRerenderKey(n => n + 1);
           }}
           onClose={() => setShowGoodbye(true)}
@@ -166,9 +212,19 @@ export default function App() {
     
     setPrevStats({ ...newState });
     updateState(newState);
-    setIsDialogueFinished(false);
-    setRerenderKey(n => n + 1);
-    myceliumRef.current?.triggerPulse(new THREE.Vector3(1.0, 0.0, 0.0));
+
+    const isEnding =
+      newState.sceneId &&
+      typeof newState.sceneId === "string" &&
+      newState.sceneId.startsWith("ending");
+
+    if (isEnding) {
+      setMetaState("personal_stats");
+    } else {
+      setIsDialogueFinished(false);
+      setRerenderKey((n) => n + 1);
+      myceliumRef.current?.triggerPulse(new THREE.Vector3(1.0, 0.0, 0.0));
+    }
   };
 
   const addStat = (key, amount) => {
@@ -200,6 +256,8 @@ export default function App() {
     });
     setForcedProfile(null);
     setIsDialogueFinished(false);
+    setMetaState(null);
+    realityCheckDoneRef.current = false;
     setRerenderKey(n => n + 1);
   };
 
@@ -411,23 +469,31 @@ export default function App() {
         floatingTexts={statIndicators}
       />
 
-      <div className="story-container">
-        <DialogueBox
-          lines={fullLines}
-          effects={effects}
-          onFinish={() => setIsDialogueFinished(true)}
-        />
-      </div>
+      {(!metaState || metaState === "reality_check") && (
+        <>
+          <div className="story-container">
+            <DialogueBox
+              lines={fullLines}
+              effects={effects}
+              onFinish={handleDialogueFinish}
+            />
+          </div>
 
-      <div className="choices-container">
-        {isDialogueFinished && (
-          <ChoiceList
-            choices={scene.choices}
-            onSelect={handleChoice}
-            effects={effects}
-          />
-        )}
-      </div>
+          <div className="choices-container">
+            {isDialogueFinished && !metaState && (
+              <ChoiceList
+                choices={scene.choices}
+                onSelect={handleChoice}
+                effects={effects}
+              />
+            )}
+          </div>
+        </>
+      )}
+
+      {metaState && (
+        <MetaOverlay key={metaState} mode={metaState} onComplete={handleMetaComplete} />
+      )}
 
       {/* Visual noise overlay (tension) */}
       {effects?.visualNoise > 0 && (

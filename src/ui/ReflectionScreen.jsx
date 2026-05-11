@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { gameState } from "../state/gameState";
 import { getSimulationProfile } from "../engine/effects";
 
@@ -96,18 +96,45 @@ export default function ReflectionScreen({ onRestart, onClose }) {
         </p>
       </div>
 
-      {/* Help section */}
+      {/* Help section - grounded, practical */}
       <div style={{ marginBottom: "2rem" }}>
         <p style={{ marginBottom: "1rem" }}>
-          If you want to interrupt the loop, small things can help:
+          You do not need to stop using your phone completely.
         </p>
-        <ul style={{ paddingLeft: "1.5rem" }}>
-          <li style={{ marginBottom: "0.5rem" }}>move your phone out of reach</li>
-          <li style={{ marginBottom: "0.5rem" }}>turn off non-essential notifications</li>
-          <li style={{ marginBottom: "0.5rem" }}>set a moment to check in with yourself</li>
-        </ul>
-        <p style={{ marginTop: "1rem", fontSize: "0.9rem", opacity: 0.7 }}>
-          Not perfect solutions—just ways to create a pause.
+        <p style={{ marginBottom: "1rem" }}>
+          But noticing the moment before you open it —
+          that matters.
+        </p>
+        <p style={{
+          marginTop: "1.5rem",
+          fontSize: "0.95rem",
+          opacity: 0.8,
+          lineHeight: "1.7",
+        }}>
+          Next time you reach for your phone automatically:
+        </p>
+        <p style={{
+          marginTop: "0.5rem",
+          fontSize: "0.95rem",
+          opacity: 0.8,
+          fontStyle: "italic",
+        }}>
+          pause for 5 seconds.
+        </p>
+        <p style={{
+          marginTop: "0.5rem",
+          fontSize: "0.95rem",
+          opacity: 0.8,
+        }}>
+          Ask yourself:
+        </p>
+        <p style={{
+          marginTop: "0.3rem",
+          fontSize: "1.05rem",
+          opacity: 0.9,
+          fontStyle: "italic",
+        }}>
+          &ldquo;What am I looking for right now?&rdquo;
         </p>
       </div>
 
@@ -116,7 +143,7 @@ export default function ReflectionScreen({ onRestart, onClose }) {
         marginBottom: "2rem",
         fontStyle: "italic",
       }}>
-        Noticing it is already a step.
+        This loop is hard to notice while you&apos;re inside it.
       </p>
 
       {/* Buttons */}
