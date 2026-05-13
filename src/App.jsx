@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useGameEngine } from "./hooks/useGameEngine";
 import { playRoomSound, ensureAudioContext } from "./hooks/useSound";
 
+import HomePage from "./ui/HomePage";
+import InfoPage from "./ui/InfoPage";
+import ProjectPage from "./ui/ProjectPage";
 import DialogueBox from "./ui/DialogueBox";
 import ChoiceList from "./ui/ChoiceList";
 import MyceliumLayer from "./ui/MyceliumLayer";
@@ -10,6 +13,11 @@ import MetaOverlay from "./ui/MetaOverlay";
 import DebugPanel from "./ui/DebugPanel";
 
 export default function App() {
+  const [page, setPage] = useState("home");
+  const [showDebug, setShowDebug] = useState(false);
+  const [showGoodbye, setShowGoodbye] = useState(false);
+  const stopRoomRef = useRef(null);
+
   const {
     state,
     scene,
@@ -35,10 +43,6 @@ export default function App() {
     prevScene,
   } = useGameEngine();
 
-  const [showDebug, setShowDebug] = useState(false);
-  const [showGoodbye, setShowGoodbye] = useState(false);
-  const stopRoomRef = useRef(null);
-
   useEffect(() => {
     const handler = (e) => {
       if (e.key === "p" || e.key === "P") {
@@ -59,6 +63,26 @@ export default function App() {
     return () => document.removeEventListener("click", handler);
   }, []);
 
+  const go = (p) => () => setPage(p);
+
+  if (page === "home") {
+    return (
+      <HomePage onStart={go("info")} onInfo={go("info")} onProject={go("project")} />
+    );
+  }
+
+  if (page === "info") {
+    return (
+      <InfoPage onHome={go("home")} onProject={go("project")} onStart={go("story")} />
+    );
+  }
+
+  if (page === "project") {
+    return (
+      <ProjectPage onHome={go("home")} onInfo={go("info")} onStart={go("story")} />
+    );
+  }
+
   const showEnding =
     state.sceneId?.startsWith("ending") || state.sceneId === "reflection";
 
@@ -71,8 +95,9 @@ export default function App() {
       <div className="app">
         <ReflectionScreen
           onRestart={() => {
-            setShowGoodbye(false);
             resetAll();
+            setShowDebug(false);
+            setPage("home");
           }}
           onClose={() => setShowGoodbye(true)}
         />
