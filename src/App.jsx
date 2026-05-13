@@ -211,7 +211,6 @@ export default function App() {
     }
     
     setPrevStats({ ...newState });
-    updateState(newState);
 
     const isEnding =
       newState.sceneId &&
@@ -219,8 +218,10 @@ export default function App() {
       newState.sceneId.startsWith("ending");
 
     if (isEnding) {
+      updateState({ ...newState, sceneId: state.sceneId });
       setMetaState("personal_stats");
     } else {
+      updateState(newState);
       setIsDialogueFinished(false);
       setRerenderKey((n) => n + 1);
       myceliumRef.current?.triggerPulse(new THREE.Vector3(1.0, 0.0, 0.0));

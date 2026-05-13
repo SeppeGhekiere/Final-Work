@@ -480,10 +480,16 @@ export default class MyceliumWorld {
 		const cameraZ = this.camera.position.z;
 		const removeThreshold = cameraZ - REMOVE_BEHIND;
 
-		this.tubes = this.tubes.filter((mesh) => {
+		this.tubes.forEach((mesh) => {
 			const tubeZ = mesh.userData.maxZ || 0;
+			if (tubeZ < removeThreshold && mesh.userData.despawnTime === undefined) {
+				mesh.userData.despawnTime = this.time;
+				mesh.userData.despawnStartGrowth = mesh.material.uniforms.uGrowth.value;
+			}
+		});
 
-			if (tubeZ < removeThreshold) {
+		this.tubes = this.tubes.filter((mesh) => {
+			if (mesh.userData.shrunk) {
 				this.group.remove(mesh);
 				mesh.geometry.dispose();
 				mesh.material.dispose();
@@ -522,7 +528,15 @@ export default class MyceliumWorld {
 				mesh.material.uniforms.time.value = this.time;
 				mesh.material.uniforms.uCameraPos.value.copy(camPos);
 
-				if (mesh.userData.spawnTime !== undefined) {
+				if (mesh.userData.despawnTime !== undefined) {
+					const elapsed = this.time - mesh.userData.despawnTime;
+					const progress = Math.min(elapsed / GROW_DURATION, 1.0);
+					const startGrowth = mesh.userData.despawnStartGrowth;
+					mesh.material.uniforms.uGrowth.value = Math.max(startGrowth * (1.0 - progress), 0.0);
+					if (progress >= 1.0) {
+						mesh.userData.shrunk = true;
+					}
+				} else if (mesh.userData.spawnTime !== undefined) {
 					const age = this.time - mesh.userData.spawnTime;
 					const growth = Math.min(age / GROW_DURATION, 1.0);
 					mesh.material.uniforms.uGrowth.value = growth;

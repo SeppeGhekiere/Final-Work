@@ -199,17 +199,17 @@ export const scenes = {
 	scene5: {
 		id: "scene5",
 		lines: [
-			{ text: "You tell yourself it’s fine.", pauseAfter: 900 },
+			{ text: "You tell yourself it's fine.", pauseAfter: 900 },
 			{ text: "Just a habit.", pauseAfter: 900 },
 			{ text: "Something everyone does.", pauseAfter: 1000 },
 			{ text: "", pauseAfter: 800 },
-			{ text: "But it doesn’t feel like that anymore.", pauseAfter: 0 },
+			{ text: "But it doesn't feel like that anymore.", pauseAfter: 0 },
 		],
 		choices: [
-			{ text: "Continue", effects: { time_loss: 3 }, next: "ending" },
-			{ text: "Try to stop", effects: { resistance: 3 }, next: "ending" },
-			{ text: "Think about why", effects: { awareness: 2 }, next: "ending" },
-			{ text: "Just one more minute", effects: { time_loss: 2 }, next: "ending" },
+			{ text: "Continue", effects: { time_loss: 3 }, next: "scene6" },
+			{ text: "Try to stop", effects: { resistance: 3 }, next: "scene6" },
+			{ text: "Think about why", effects: { awareness: 2 }, next: "scene6" },
+			{ text: "Just one more minute", effects: { time_loss: 2 }, next: "scene6" },
 		],
 	},
 	scene6: {
