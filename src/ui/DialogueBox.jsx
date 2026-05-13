@@ -11,6 +11,7 @@ export default function DialogueBox({ lines, effects, onFinish }) {
 	// Handle time jump effect (time_loss >= 8)
 	useEffect(() => {
 		if (effects?.timeJump && Math.random() < 0.3) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect -- transient overlay effect
 			setTimeJump(true);
 			const timer = setTimeout(() => setTimeJump(false), 2000);
 			return () => clearTimeout(timer);

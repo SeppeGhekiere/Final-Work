@@ -139,34 +139,25 @@ export function getEffects(state, forcedProfile = null) {
 		disappearChance: merged.disappearChance || 0,
 		autoScroll: merged.autoScroll,
 
-		// Legacy effects (lowered thresholds)
-		textDelay: 2 + Math.pow(t, 1.1) * 3,
+		// Legacy effects
 		choiceInstability: t > 3,
-		flicker: t > 5,
 		sleepiness: Math.min(Math.pow(t, 1.2) * 0.05, 0.75),
 		drift: Math.min(Math.pow(tension + 1, 1.1) * 0.06, 3),
 
 		// === TIME_LOSS effects (time distortion) ===
 		timeJump: t >= 8,
-		dialogueSkip: Math.min(t / 20, 0.3),
-		skipLineChance: sceneId === "scene6" && Math.random() < 0.2, // Special scene6 effect
 
 		// === TENSION effects (anxiety/restlessness) ===
 		jitter: Math.min(tension * 0.1, 0.5),
 		screenShake: tension >= 5,
 		visualNoise: Math.min(tension / 20, 0.4),
-		transitionSpeed: 1 + tension * 0.05,
 
 		// === AWARENESS effects (clarity - LOW = bad) ===
-		confusion: Math.max(0, 1 - (awareness / 10)),
-		repeatDialogue: awareness <= 3,
 		memoryDecay: Math.max(0, Math.min((10 - awareness) / 10, 1)),
 
 		// === RESISTANCE effects (ability to choose - LOW = bad) ===
 		autoSelect: resistance <= 1,
 		overrideChoices: resistance <= 2,
-		resistanceChoiceStability: Math.max(0.3, resistance / 10),
-		resistanceInputDelay: resistance <= 2 ? 1000 : (resistance <= 5 ? 500 : 0),
 
 		// Profile name for debugging
 		profile: profile,

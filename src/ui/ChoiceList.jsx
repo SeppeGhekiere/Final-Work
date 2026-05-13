@@ -24,6 +24,7 @@ export default function ChoiceList({ choices, onSelect, effects }) {
 
   // Handle input delay
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- reset state when choices change */
     setChoicesEnabled(false);
     setReflectedIndices(new Set());
     const timer = setTimeout(() => {
@@ -71,27 +72,6 @@ export default function ChoiceList({ choices, onSelect, effects }) {
     
     return () => clearTimeout(timer);
   }, [choices, overrideChoices]);
-
-  // Handle auto-select (low resistance)
-  useEffect(() => {
-    if (autoSelect && choices.length > 0) {
-      autoSelectTimerRef.current = setTimeout(() => {
-        // Auto-select a random non-hidden choice
-        const visibleIndices = choices
-          .map((_, i) => i)
-          .filter(i => !hiddenChoices.has(i));
-        if (visibleIndices.length > 0) {
-          const randomIndex = visibleIndices[Math.floor(Math.random() * visibleIndices.length)];
-          onSelect(choices[randomIndex]);
-        }
-      }, 15000); // Auto-select after 15 seconds
-    }
-    return () => {
-      if (autoSelectTimerRef.current) {
-        clearTimeout(autoSelectTimerRef.current);
-      }
-    };
-  }, [choices, autoSelect, hiddenChoices, onSelect]);
 
   // Handle choice instability (both legacy and new system)
   useEffect(() => {
