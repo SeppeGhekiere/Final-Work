@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useGameEngine } from "./hooks/useGameEngine";
 import { playRoomSound, ensureAudioContext } from "./hooks/useSound";
+import { Helmet } from "react-helmet-async";
 
 import HomePage from "./ui/HomePage";
 import InfoPage from "./ui/InfoPage";
@@ -67,19 +68,43 @@ export default function App() {
 
   if (page === "home") {
     return (
-      <HomePage onStart={go("info")} onInfo={go("info")} onProject={go("project")} />
+      <>
+        <Helmet>
+          <title>Doomscroll Project</title>
+          <meta name="description" content="Doomscroll — an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection." />
+          <meta name="keywords" content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe" />
+          <meta name="author" content="Ghekiere Seppe" />
+        </Helmet>
+        <HomePage onStart={go("info")} onInfo={go("info")} onProject={go("project")} />
+      </>
     );
   }
 
   if (page === "info") {
     return (
-      <InfoPage onHome={go("home")} onProject={go("project")} onStart={go("story")} />
+      <>
+        <Helmet>
+          <title>Doomscroll Project</title>
+          <meta name="description" content="Doomscroll — an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection." />
+          <meta name="keywords" content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe" />
+          <meta name="author" content="Ghekiere Seppe" />
+        </Helmet>
+        <InfoPage onHome={go("home")} onProject={go("project")} onStart={go("story")} />
+      </>
     );
   }
 
   if (page === "project") {
     return (
-      <ProjectPage onHome={go("home")} onInfo={go("info")} onStart={go("story")} />
+      <>
+        <Helmet>
+          <title>Doomscroll Project</title>
+          <meta name="description" content="Doomscroll — an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection." />
+          <meta name="keywords" content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe" />
+          <meta name="author" content="Ghekiere Seppe" />
+        </Helmet>
+        <ProjectPage onHome={go("home")} onInfo={go("info")} onStart={go("story")} />
+      </>
     );
   }
 
@@ -87,26 +112,54 @@ export default function App() {
     state.sceneId?.startsWith("ending") || state.sceneId === "reflection";
 
   if (showGoodbye) {
-    return <div className="app"><p>Thanks for playing.</p></div>;
+    return (
+      <>
+        <Helmet>
+          <title>Doomscroll Project</title>
+          <meta name="description" content="Doomscroll — an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection." />
+          <meta name="keywords" content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe" />
+          <meta name="author" content="Ghekiere Seppe" />
+        </Helmet>
+        <div className="app"><p>Thanks for playing.</p></div>
+      </>
+    );
   }
 
   if (state.sceneId === "reflection") {
     return (
-      <div className="app">
-        <ReflectionScreen
-          onRestart={() => {
-            resetAll();
-            setShowDebug(false);
-            setPage("home");
-          }}
-          onClose={() => setShowGoodbye(true)}
-        />
-      </div>
+      <>
+        <Helmet>
+          <title>Doomscroll Project</title>
+          <meta name="description" content="Doomscroll — an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection." />
+          <meta name="keywords" content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe" />
+          <meta name="author" content="Ghekiere Seppe" />
+        </Helmet>
+        <div className="app">
+          <ReflectionScreen
+            onRestart={() => {
+              resetAll();
+              setShowDebug(false);
+              setPage("home");
+            }}
+            onClose={() => setShowGoodbye(true)}
+          />
+        </div>
+      </>
     );
   }
 
   if (!scene && !showEnding) {
-    return <div className="app"><p>The End</p></div>;
+    return (
+      <>
+        <Helmet>
+          <title>Doomscroll Project</title>
+          <meta name="description" content="Doomscroll — an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection." />
+          <meta name="keywords" content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe" />
+          <meta name="author" content="Ghekiere Seppe" />
+        </Helmet>
+        <div className="app"><p>The End</p></div>
+      </>
+    );
   }
 
   const appClassName = [
@@ -116,72 +169,80 @@ export default function App() {
   ].filter(Boolean).join(" ");
 
   return (
-    <div className={appClassName}>
-      {showDebug && (
-        <DebugPanel
-          profile={profile}
-          autoProfile={autoProfile}
-          forcedProfile={forcedProfile}
-          setForcedProfile={setForcedProfile}
-          state={state}
-          sceneOverride={sceneOverride}
-          effects={effects}
-          addStat={addStat}
-          prevScene={prevScene}
-          nextScene={nextScene}
-          resetAll={resetAll}
-          manualOverrides={manualOverrides}
-          toggleEffect={toggleEffect}
+    <>
+      <Helmet>
+        <title>Doomscroll Project</title>
+        <meta name="description" content="Doomscroll — an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection." />
+        <meta name="keywords" content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe" />
+        <meta name="author" content="Ghekiere Seppe" />
+      </Helmet>
+      <div className={appClassName}>
+        {showDebug && (
+          <DebugPanel
+            profile={profile}
+            autoProfile={autoProfile}
+            forcedProfile={forcedProfile}
+            setForcedProfile={setForcedProfile}
+            state={state}
+            sceneOverride={sceneOverride}
+            effects={effects}
+            addStat={addStat}
+            prevScene={prevScene}
+            nextScene={nextScene}
+            resetAll={resetAll}
+            manualOverrides={manualOverrides}
+            toggleEffect={toggleEffect}
+          />
+        )}
+
+        <MyceliumLayer
+          ref={myceliumRef}
+          blur={effects.blur}
+          sleepiness={effects.sleepiness ?? 0}
+          floatingTexts={statIndicators}
         />
-      )}
 
-      <MyceliumLayer
-        ref={myceliumRef}
-        blur={effects.blur}
-        sleepiness={effects.sleepiness ?? 0}
-        floatingTexts={statIndicators}
-      />
-
-      {(!metaState || metaState === "reality_check") && (
-        <>
-          <div className="story-container">
-            <DialogueBox
-              lines={fullLines}
-              effects={effects}
-              onFinish={handleDialogueFinish}
-            />
-          </div>
-
-          <div className="choices-container">
-            {isDialogueFinished && !metaState && (
-              <ChoiceList
-                choices={scene.choices}
-                onSelect={handleChoice}
+        {(!metaState || metaState === "reality_check") && (
+          <>
+            <div className="story-container">
+              <DialogueBox
+                lines={fullLines}
                 effects={effects}
+                onFinish={handleDialogueFinish}
               />
-            )}
-          </div>
-        </>
-      )}
+            </div>
 
-      {metaState && (
-        <MetaOverlay key={metaState} mode={metaState} onComplete={handleMetaComplete} />
-      )}
+            <div className="choices-container">
+              {isDialogueFinished && !metaState && (
+                <ChoiceList
+                  choices={scene.choices}
+                  onSelect={handleChoice}
+                  effects={effects}
+                />
+              )}
+            </div>
+          </>
+        )}
 
-      {effects?.visualNoise > 0 && (
-        <div
-          className="visual-noise-overlay"
-          style={{
-            position: "fixed",
-            inset: 0,
-            pointerEvents: "none",
-            zIndex: 5,
-            opacity: effects.visualNoise,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
-            mixBlendMode: "overlay",
-          }}
-        />
-      )}
-    </div>
+        {metaState && (
+          <MetaOverlay key={metaState} mode={metaState} onComplete={handleMetaComplete} />
+        )}
+
+        {effects?.visualNoise > 0 && (
+          <div
+            className="visual-noise-overlay"
+            style={{
+              position: "fixed",
+              inset: 0,
+              pointerEvents: "none",
+              zIndex: 5,
+              opacity: effects.visualNoise,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+              mixBlendMode: "overlay",
+            }}
+          />
+        )}
+      </div>
+    </>
   );
 }

@@ -1,7 +1,15 @@
+:root {
+	--color-bg: #050403;
+	--color-text: #eaeaea;
+	--color-accent: #cd5909;
+	/* --color-accent: #00798b; */
+	--color-accent-hover: #b04e08;
+}
+
 body {
 	margin: 0;
-	background: #050403;
-	color: #eaeaea;
+	background: var(--color-bg);
+	color: var(--color-text);
 	font-family: sans-serif;
 }
 
@@ -16,7 +24,7 @@ body {
 	content: "";
 	position: absolute;
 	inset: 0;
-	background: radial-gradient(circle at center, rgba(255, 255, 255, 0.04), transparent 60%);
+	background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.5) 100%);
 	pointer-events: none;
 }
 
@@ -528,7 +536,7 @@ body {
 .info-page {
 	width: 100%;
 	min-height: 100vh;
-	color: #eaeaea;
+	color: var(--color-text);
 	font-family: "Montserrat", sans-serif;
 }
 
@@ -544,7 +552,7 @@ body {
 	font-size: 40px;
 	line-height: 54px;
 	letter-spacing: -0.015em;
-	color: #cd5909;
+	color: var(--color-accent);
 	margin: 80px 0 24px 0;
 }
 
@@ -563,7 +571,7 @@ body {
 .project-page {
 	width: 100%;
 	min-height: 100vh;
-	color: #eaeaea;
+	color: var(--color-text);
 	font-family: "Montserrat", sans-serif;
 }
 
@@ -572,7 +580,7 @@ body {
 	font-weight: 500;
 	font-size: 13px;
 	letter-spacing: -0.015em;
-	color: #eaeaea;
+	color: var(--color-text);
 	opacity: 0.35;
 }
 
@@ -587,7 +595,7 @@ body {
 	font-size: 40px;
 	line-height: 54px;
 	letter-spacing: -0.015em;
-	color: #cd5909;
+	color: var(--color-accent);
 	margin: 0 0 20px 0;
 }
 
@@ -609,7 +617,7 @@ body {
 	font-size: 20px;
 	line-height: 30px;
 	letter-spacing: -0.015em;
-	color: #cd5909;
+	color: var(--color-accent);
 	margin: 0 0 16px 0;
 }
 
@@ -638,7 +646,7 @@ body {
 	font-size: 15px;
 	letter-spacing: -0.015em;
 	color: #ffffff;
-	background-color: #cd5909;
+	background-color: var(--color-accent);
 	border: none;
 	border-radius: 6px;
 	cursor: pointer;
@@ -646,7 +654,7 @@ body {
 }
 
 .project-begin-btn:hover {
-	background-color: #b04e08;
+	background-color: var(--color-accent-hover);
 }
 
 @media (max-width: 768px) {
@@ -672,7 +680,7 @@ body {
 	width: 100%;
 	min-height: 100vh;
 	font-family: "Montserrat", sans-serif;
-	color: #eaeaea;
+	color: var(--color-text);
 }
 
 .home-nav {
@@ -714,7 +722,7 @@ body {
 	font-weight: 500;
 	font-size: 13px;
 	letter-spacing: -0.015em;
-	color: #cd5909;
+	color: var(--color-accent);
 	background: none;
 	border: none;
 	cursor: pointer;
@@ -745,7 +753,7 @@ body {
 	font-size: 40px;
 	line-height: 54px;
 	letter-spacing: -0.015em;
-	color: #cd5909;
+	color: var(--color-accent);
 	margin: 0 0 16px 0;
 }
 
@@ -764,7 +772,7 @@ body {
 	font-size: 15px;
 	letter-spacing: -0.015em;
 	color: #ffffff;
-	background-color: #cd5909;
+	background-color: var(--color-accent);
 	border: none;
 	border-radius: 6px;
 	cursor: pointer;
@@ -772,7 +780,7 @@ body {
 }
 
 .hero-btn:hover {
-	background-color: #b04e08;
+	background-color: var(--color-accent-hover);
 }
 
 .hero-graphic {
@@ -816,7 +824,7 @@ body {
 	font-size: 22px;
 	line-height: 34px;
 	letter-spacing: -0.015em;
-	color: #eaeaea;
+	color: var(--color-text);
 	margin: 0 0 20px 0;
 	opacity: 0.8;
 }
@@ -826,7 +834,7 @@ body {
 	font-size: 14px;
 	line-height: 22px;
 	letter-spacing: -0.015em;
-	color: #cd5909;
+	color: var(--color-accent);
 	font-style: normal;
 }
 

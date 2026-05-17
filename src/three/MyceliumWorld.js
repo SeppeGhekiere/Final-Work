@@ -15,7 +15,7 @@ export default class MyceliumWorld {
 
 		this.scene = new THREE.Scene();
 		this.scene.background = new THREE.Color(0x00000);
-		this.scene.fog = new THREE.Fog(0x010100, 0.1, 10);
+		this.scene.fog = new THREE.Fog(0x000000, 0.1, 8);
 
 		this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
 		this.camera.position.set(0, 0, 80);

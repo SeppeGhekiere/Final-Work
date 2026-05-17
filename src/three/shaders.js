@@ -2,17 +2,51 @@ import * as THREE from "three";
 
 const VERTEX_SHADER = `
 	attribute float aAlong;
+
 	varying float vAlong;
 	varying float vDepth;
 	varying vec3 vWorldPosition;
 
+	uniform float time;
+	uniform float uNoiseAmp;
+	uniform float uNoiseSpeed;
+	uniform float uNoiseFreq;
+
+	float hash31(vec3 p) {
+		p = fract(p * 0.3183099);
+		p *= 17.0;
+		return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+	}
+
+	float noise3(vec3 p) {
+		vec3 i = floor(p);
+		vec3 f = fract(p);
+		f = f * f * (3.0 - 2.0 * f);
+		return mix(
+			mix(mix(hash31(i + vec3(0,0,0)), hash31(i + vec3(1,0,0)), f.x),
+				mix(hash31(i + vec3(0,1,0)), hash31(i + vec3(1,1,0)), f.x), f.y),
+			mix(mix(hash31(i + vec3(0,0,1)), hash31(i + vec3(1,0,1)), f.x),
+				mix(hash31(i + vec3(0,1,1)), hash31(i + vec3(1,1,1)), f.x), f.y),
+			f.z
+		);
+	}
+
 	void main() {
 		vAlong = aAlong;
 
-		vec4 worldPos = modelMatrix * vec4(position, 1.0);
+		float swayAngle = noise3(vec3(aAlong * 2.0, 0.0, time * uNoiseSpeed * 0.3)) * 6.2832;
+		float swayMag = noise3(vec3(aAlong * 3.0, 1.0, time * uNoiseSpeed * 0.4)) * uNoiseAmp;
+		vec3 swayOffset = vec3(cos(swayAngle) * swayMag, sin(swayAngle) * swayMag, 0.0);
+
+		float localNoise = noise3(position * uNoiseFreq + time * uNoiseSpeed * 0.5);
+		vec3 localOffset = normal * localNoise * uNoiseAmp * 0.3;
+
+		vec3 displacedPos = position + swayOffset + localOffset;
+
+		vec4 worldPos = modelMatrix * vec4(displacedPos, 1.0);
 		vWorldPosition = worldPos.xyz;
 
-		vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+		vec4 mvPosition = modelViewMatrix * vec4(displacedPos, 1.0);
 		vDepth = -mvPosition.z;
 
 		gl_Position = projectionMatrix * mvPosition;
@@ -26,10 +60,31 @@ const FRAGMENT_SHADER = `
 	uniform float uPulse;
 	uniform float uGrowth;
 	uniform float uRedPulseTime;
+	uniform float uGlowIntensity;
+	uniform vec3 uGlowColor;
 
 	varying float vAlong;
 	varying float vDepth;
 	varying vec3 vWorldPosition;
+
+	float hash31(vec3 p) {
+		p = fract(p * 0.3183099);
+		p *= 17.0;
+		return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+	}
+
+	float noise3(vec3 p) {
+		vec3 i = floor(p);
+		vec3 f = fract(p);
+		f = f * f * (3.0 - 2.0 * f);
+		return mix(
+			mix(mix(hash31(i + vec3(0,0,0)), hash31(i + vec3(1,0,0)), f.x),
+				mix(hash31(i + vec3(0,1,0)), hash31(i + vec3(1,1,0)), f.x), f.y),
+			mix(mix(hash31(i + vec3(0,0,1)), hash31(i + vec3(1,0,1)), f.x),
+				mix(hash31(i + vec3(0,1,1)), hash31(i + vec3(1,1,1)), f.x), f.y),
+			f.z
+		);
+	}
 
 	void main() {
 		if (vAlong > uGrowth) discard;
@@ -39,6 +94,10 @@ const FRAGMENT_SHADER = `
 		if (dist < maskRadius) discard;
 
 		vec3 base = vec3(0.8, 0.5, 0.1);
+
+		float colorNoise = noise3(vWorldPosition * 0.5 + time * 0.05);
+		base = mix(base, base * 1.15, colorNoise * 0.4);
+
 		vec3 color = base;
 		float pulseBand = 0.0;
 
@@ -81,7 +140,19 @@ const FRAGMENT_SHADER = `
 			}
 		}
 
-		float depthFade = exp(-vDepth * 0.025);
+		float glowWave = sin(vAlong * 8.0 - time * 1.5) * 0.5 + 0.5;
+		float glow = glowWave * uGlowIntensity;
+		color += uGlowColor * glow;
+
+		vec3 fdx = dFdx(vWorldPosition);
+		vec3 fdy = dFdy(vWorldPosition);
+		vec3 surfNormal = normalize(cross(fdx, fdy));
+		vec3 viewDir = normalize(uCameraPos - vWorldPosition);
+		float rim = 1.0 - abs(dot(surfNormal, viewDir));
+		rim = pow(rim, 2.0) * 0.2;
+		color += uGlowColor * rim;
+
+		float depthFade = exp(-vDepth * 0.04);
 		color *= depthFade;
 
 		gl_FragColor = vec4(color, 1.0);
@@ -101,6 +172,11 @@ export function createShaderMaterial({ spatialWave = false, pulseEnabled = true 
 			uPulse: { value: pulseEnabled ? 1 : 0 },
 			uGrowth: { value: 1.0 },
 			uRedPulseTime: { value: -1.0 },
+			uNoiseAmp: { value: 0.5 },
+			uNoiseSpeed: { value: 1.0 },
+			uNoiseFreq: { value: 1.5 },
+			uGlowIntensity: { value: 0.15 },
+			uGlowColor: { value: new THREE.Color(0xcd5909) },
 		},
 
 		vertexShader: VERTEX_SHADER,
