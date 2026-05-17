@@ -528,7 +528,6 @@ body {
 .info-page {
 	width: 100%;
 	min-height: 100vh;
-	background: #050403;
 	color: #eaeaea;
 	font-family: "Montserrat", sans-serif;
 }
@@ -564,7 +563,6 @@ body {
 .project-page {
 	width: 100%;
 	min-height: 100vh;
-	background: #050403;
 	color: #eaeaea;
 	font-family: "Montserrat", sans-serif;
 }
@@ -673,7 +671,6 @@ body {
 .homepage-1 {
 	width: 100%;
 	min-height: 100vh;
-	background-color: #050403;
 	font-family: "Montserrat", sans-serif;
 	color: #eaeaea;
 }

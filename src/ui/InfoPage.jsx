@@ -1,6 +1,9 @@
+import Background from "./Background";
+
 export default function InfoPage({ onStart, onHome, onProject }) {
   return (
     <div className="info-page">
+      <Background />
       <nav className="home-nav">
         <button className="home-logo home-logo-btn" onClick={onHome}>The Loop</button>
         <div className="home-nav-links">

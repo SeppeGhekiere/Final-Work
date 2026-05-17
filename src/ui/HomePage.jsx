@@ -1,6 +1,9 @@
+import Background from "./Background";
+
 export default function HomePage({ onStart, onInfo, onProject }) {
 	return (
 		<div className="homepage-1">
+			<Background />
 			<nav className="home-nav">
 				<span className="home-logo">The Loop</span>
 				<div className="home-nav-links">
