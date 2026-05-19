@@ -60,10 +60,20 @@ const sceneEffects = {
 			choiceFade: 0.1,
 		},
 	},
+	scene3_resist: {
+		override: {
+			autoScroll: false,
+		},
+	},
 	scene4_loop: {
 		override: {
 			blur: 2,
 			inputDelay: 200,
+		},
+	},
+	scene4_reflect: {
+		override: {
+			autoScroll: false,
 		},
 	},
 	scene6: {

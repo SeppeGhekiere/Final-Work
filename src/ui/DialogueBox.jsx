@@ -1,4 +1,5 @@
 import { useEffect, useRef, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import useTypewriter from "../hooks/useTypewriter";
 import { gameState } from "../state/gameState";
 
@@ -31,9 +32,20 @@ export default function DialogueBox({ lines, effects, onFinish }) {
 		});
 	}, [lines, textSpeed]);
 
-	const { displayedLines, currentText, isFinished } = useTypewriter(adjustedLines, speed);
+	const { displayedLines, currentText, isFinished, skip } = useTypewriter(adjustedLines, speed);
 
 	const hasCalledOnFinish = useRef(false);
+
+	useEffect(() => {
+		const handleKeyDown = (e) => {
+			if (e.code === "Space" && !isFinished) {
+				e.preventDefault();
+				skip();
+			}
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [isFinished, skip]);
 
 	useEffect(() => {
 		if (isFinished && !hasCalledOnFinish.current) {
@@ -91,6 +103,26 @@ export default function DialogueBox({ lines, effects, onFinish }) {
 			})}
 
 			{!isFinished && <p>{currentText}</p>}
+			{!isFinished && createPortal(
+				<div
+					style={{
+						position: "fixed",
+						bottom: "2rem",
+						right: "2rem",
+						fontSize: "0.8rem",
+						opacity: 0.5,
+						fontStyle: "italic",
+						zIndex: 9999,
+						pointerEvents: "none",
+						color: "#e0e0e0",
+						textTransform: "uppercase",
+						letterSpacing: "0.05em",
+					}}
+				>
+					[Press Space to skip]
+				</div>,
+				document.body
+			)}
 		</div>
 	);
 }

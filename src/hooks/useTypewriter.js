@@ -44,9 +44,18 @@ export default function useTypewriter(lines, speed = 30) {
 
   const isFinished = currentLineIndex >= lines.length;
 
+  const skip = () => {
+    if (isFinished) return;
+    setDisplayedLines(lines.map(l => l.text));
+    setCurrentLineIndex(lines.length);
+    setCurrentText("");
+    setCharIndex(0);
+  };
+
   return {
     displayedLines,
     currentText,
     isFinished,
+    skip,
   };
 }

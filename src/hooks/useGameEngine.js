@@ -5,6 +5,7 @@ import { getEffects, getSceneOverride, getSimulationProfile } from "../engine/ef
 import { applyChoice, onSceneEnter } from "../engine/sceneEngine";
 import { getAugmentedLines } from "../engine/narrativeEngine";
 import { gameState, updateState } from "../state/gameState";
+import { resetInteraction } from "../state/interactionState";
 import { logEvent } from "../analytics/logEvent";
 
 const SCENE_KEYS = Object.keys(scenes);
@@ -66,6 +67,7 @@ export function useGameEngine() {
       clearInterval(autoScrollRef.current);
       autoScrollRef.current = null;
     }
+    window.scrollTo(0, 0);
     onSceneEnter();
   }, [rerenderKey]);
 
@@ -114,7 +116,7 @@ export function useGameEngine() {
           return "cold_facts";
         case "cold_facts":
           setIsDialogueFinished(false);
-          updateState({ sceneId: "reflection" });
+          updateState({ sceneId: "reflection", tension: 0 });
           setRerenderKey((n) => n + 1);
           return null;
         default:
@@ -199,7 +201,8 @@ export function useGameEngine() {
   };
 
   const resetAll = () => {
-    updateState({ ...INITIAL_STATS });
+    updateState({ ...INITIAL_STATS, sceneId: "scene1" });
+    resetInteraction();
     setManualOverrides(initialOverrides);
     setForcedProfile(null);
     setIsDialogueFinished(false);

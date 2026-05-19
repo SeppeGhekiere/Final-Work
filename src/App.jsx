@@ -6,6 +6,7 @@ import { Helmet } from "react-helmet-async";
 import HomePage from "./ui/HomePage";
 import InfoPage from "./ui/InfoPage";
 import ProjectPage from "./ui/ProjectPage";
+import AudioPrompt from "./ui/AudioPrompt";
 import DialogueBox from "./ui/DialogueBox";
 import ChoiceList from "./ui/ChoiceList";
 import MyceliumLayer from "./ui/MyceliumLayer";
@@ -101,7 +102,7 @@ export default function App() {
 					/>
 					<meta name="author" content="Ghekiere Seppe" />
 				</Helmet>
-				<InfoPage onHome={go("home")} onProject={go("project")} onStart={go("story")} />
+				<InfoPage onHome={go("home")} onProject={go("project")} onStart={go("audio_prompt")} />
 			</>
 		);
 	}
@@ -121,12 +122,35 @@ export default function App() {
 					/>
 					<meta name="author" content="Ghekiere Seppe" />
 				</Helmet>
-				<ProjectPage onHome={go("home")} onInfo={go("info")} onStart={go("story")} />
+				<ProjectPage onHome={go("home")} onInfo={go("info")} onStart={go("audio_prompt")} />
+			</>
+		);
+	}
+
+	if (page === "audio_prompt") {
+		return (
+			<>
+				<Helmet>
+					<title>Doomscroll Project</title>
+				</Helmet>
+				<AudioPrompt onContinue={go("story")} />
 			</>
 		);
 	}
 
 	const showEnding = state.sceneId?.startsWith("ending") || state.sceneId === "reflection";
+
+	const isMetaActive = !!metaState;
+	const isReflection = state.sceneId === "reflection";
+	const suppressEffects = isMetaActive || isReflection;
+
+	const appClassName = [
+		"app",
+		effects?.jitter > 0.2 && !suppressEffects ? "jitter" : "",
+		effects?.screenShake && !suppressEffects ? "shake" : "",
+	]
+		.filter(Boolean)
+		.join(" ");
 
 	if (showGoodbye) {
 		return (
@@ -165,7 +189,7 @@ export default function App() {
 					/>
 					<meta name="author" content="Ghekiere Seppe" />
 				</Helmet>
-				<div className="app">
+				<div className={appClassName}>
 					<ReflectionScreen
 						onRestart={() => {
 							resetAll();
@@ -194,16 +218,12 @@ export default function App() {
 					/>
 					<meta name="author" content="Ghekiere Seppe" />
 				</Helmet>
-				<div className="app">
+				<div className={appClassName}>
 					<p>The End</p>
 				</div>
 			</>
 		);
 	}
-
-	const appClassName = ["app", effects?.jitter > 0.2 ? "jitter" : "", effects?.screenShake ? "shake" : ""]
-		.filter(Boolean)
-		.join(" ");
 
 	return (
 		<>

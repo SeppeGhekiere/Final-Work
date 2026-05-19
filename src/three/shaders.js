@@ -11,6 +11,7 @@ const VERTEX_SHADER = `
 	uniform float uNoiseAmp;
 	uniform float uNoiseSpeed;
 	uniform float uNoiseFreq;
+	uniform float uTimeLoss;
 
 	float hash31(vec3 p) {
 		p = fract(p * 0.3183099);
@@ -34,12 +35,13 @@ const VERTEX_SHADER = `
 	void main() {
 		vAlong = aAlong;
 
+		float distortion = 1.0 + uTimeLoss * 0.15;
 		float swayAngle = noise3(vec3(aAlong * 2.0, 0.0, time * uNoiseSpeed * 0.3)) * 6.2832;
-		float swayMag = noise3(vec3(aAlong * 3.0, 1.0, time * uNoiseSpeed * 0.4)) * uNoiseAmp;
+		float swayMag = noise3(vec3(aAlong * 3.0, 1.0, time * uNoiseSpeed * 0.4)) * uNoiseAmp * distortion;
 		vec3 swayOffset = vec3(cos(swayAngle) * swayMag, sin(swayAngle) * swayMag, 0.0);
 
-		float localNoise = noise3(position * uNoiseFreq + time * uNoiseSpeed * 0.5);
-		vec3 localOffset = normal * localNoise * uNoiseAmp * 0.3;
+		float localNoise = noise3(position * uNoiseFreq * distortion + time * uNoiseSpeed * 0.5);
+		vec3 localOffset = normal * localNoise * uNoiseAmp * 0.3 * distortion;
 
 		vec3 displacedPos = position + swayOffset + localOffset;
 
@@ -62,6 +64,8 @@ const FRAGMENT_SHADER = `
 	uniform float uRedPulseTime;
 	uniform float uGlowIntensity;
 	uniform vec3 uGlowColor;
+	uniform float uTension;
+	uniform float uTimeLoss;
 
 	varying float vAlong;
 	varying float vDepth;
@@ -93,7 +97,8 @@ const FRAGMENT_SHADER = `
 		float maskRadius = 6.0;
 		if (dist < maskRadius) discard;
 
-		vec3 base = vec3(0.8, 0.5, 0.1);
+		float darkness = clamp(1.0 - uTimeLoss * 0.05, 0.2, 1.0);
+		vec3 base = vec3(0.8, 0.5, 0.1) * darkness;
 
 		float colorNoise = noise3(vWorldPosition * 0.5 + time * 0.05);
 		base = mix(base, base * 1.15, colorNoise * 0.4);
@@ -101,11 +106,13 @@ const FRAGMENT_SHADER = `
 		vec3 color = base;
 		float pulseBand = 0.0;
 
+		float pulseSpeedMultiplier = 1.0 + uTension * 0.3;
+
 		if (uPulse > 0.5) {
 			if (uSpatialWave > 0.5) {
 				float cameraZ = uCameraPos.z;
-				float cycleTime = 5.0;
-				float waveOffset = mod(time, cycleTime) * 20.0;
+				float cycleTime = 5.0 / pulseSpeedMultiplier;
+				float waveOffset = mod(time, cycleTime) * 20.0 * pulseSpeedMultiplier;
 				float wavefrontZ = cameraZ - 30.0 + waveOffset;
 				float distBelow = vWorldPosition.z - wavefrontZ;
 				float pulseLength = 15.0;
@@ -114,13 +121,13 @@ const FRAGMENT_SHADER = `
 					* (1.0 - smoothstep(pulseLength, pulseLength + edgeSoftness, distBelow));
 			} else {
 				float repeat = 2.0;
-				float speed = 0.4;
+				float speed = 0.4 * pulseSpeedMultiplier;
 				float flow = vAlong * repeat - time * speed;
 				float pulse = fract(flow);
 				pulseBand = smoothstep(0.0, 0.15, pulse) * smoothstep(1.0, 0.85, pulse);
 			}
 
-			vec3 pulseColor = vec3(0.7, 0.35, 0.15);
+			vec3 pulseColor = mix(vec3(0.7, 0.35, 0.15), vec3(0.8, 0.1, 0.05), clamp(uTension / 8.0, 0.0, 1.0));
 			color = mix(base, pulseColor, pulseBand);
 		}
 
@@ -140,9 +147,11 @@ const FRAGMENT_SHADER = `
 			}
 		}
 
-		float glowWave = sin(vAlong * 8.0 - time * 1.5) * 0.5 + 0.5;
-		float glow = glowWave * uGlowIntensity;
-		color += uGlowColor * glow;
+		float glowWave = sin(vAlong * 8.0 - time * 1.5 * pulseSpeedMultiplier) * 0.5 + 0.5;
+		float glowIntensity = uGlowIntensity * (1.0 + uTension * 0.2);
+		vec3 glowColor = mix(uGlowColor, vec3(0.8, 0.1, 0.05), clamp(uTension / 10.0, 0.0, 1.0));
+		float glow = glowWave * glowIntensity;
+		color += glowColor * glow;
 
 		vec3 fdx = dFdx(vWorldPosition);
 		vec3 fdy = dFdy(vWorldPosition);
@@ -150,7 +159,7 @@ const FRAGMENT_SHADER = `
 		vec3 viewDir = normalize(uCameraPos - vWorldPosition);
 		float rim = 1.0 - abs(dot(surfNormal, viewDir));
 		rim = pow(rim, 2.0) * 0.2;
-		color += uGlowColor * rim;
+		color += glowColor * rim;
 
 		float depthFade = exp(-vDepth * 0.04);
 		color *= depthFade;
@@ -177,6 +186,8 @@ export function createShaderMaterial({ spatialWave = false, pulseEnabled = true 
 			uNoiseFreq: { value: 1.5 },
 			uGlowIntensity: { value: 0.15 },
 			uGlowColor: { value: new THREE.Color(0xcd5909) },
+			uTension: { value: 0 },
+			uTimeLoss: { value: 0 },
 		},
 
 		vertexShader: VERTEX_SHADER,

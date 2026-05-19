@@ -86,8 +86,13 @@ export default class MyceliumWorld {
 	}
 
 	updateCamera() {
+		const state = this.getState ? this.getState() : { tension: 0, time_loss: 0 };
+		const tension = state.tension || 0;
+		
 		this.time += 0.016;
-		this.totalDistance += FORWARD_SPEED;
+
+		const speedBoost = Math.min(tension * 0.005, 0.05);
+		this.totalDistance += (0.05 + speedBoost);
 
 		const zPos = 40 + this.totalDistance;
 		const xWeave = Math.sin(this.time * 0.5) * 6;
@@ -110,6 +115,9 @@ export default class MyceliumWorld {
 
 	updateShaders() {
 		const camPos = this.camera.position;
+		const state = this.getState ? this.getState() : { tension: 0, time_loss: 0 };
+		const tension = state.tension || 0;
+		const timeLoss = state.time_loss || 0;
 
 		if (this.tubes.length === 0) return;
 
@@ -117,10 +125,12 @@ export default class MyceliumWorld {
 			if (mesh && mesh.material) {
 				mesh.material.uniforms.time.value = this.time;
 				mesh.material.uniforms.uCameraPos.value.copy(camPos);
+				mesh.material.uniforms.uTension.value = tension;
+				mesh.material.uniforms.uTimeLoss.value = timeLoss;
 
 				if (mesh.userData.despawnTime !== undefined) {
 					const elapsed = this.time - mesh.userData.despawnTime;
-					const progress = Math.min(elapsed / GROW_DURATION, 1.0);
+					const progress = Math.min(elapsed / 1.5, 1.0);
 					const startGrowth = mesh.userData.despawnStartGrowth;
 					mesh.material.uniforms.uGrowth.value = Math.max(startGrowth * (1.0 - progress), 0.0);
 					if (progress >= 1.0) {
@@ -128,7 +138,7 @@ export default class MyceliumWorld {
 					}
 				} else if (mesh.userData.spawnTime !== undefined) {
 					const age = this.time - mesh.userData.spawnTime;
-					const growth = Math.min(age / GROW_DURATION, 1.0);
+					const growth = Math.min(age / 1.5, 1.0);
 					mesh.material.uniforms.uGrowth.value = growth;
 				}
 			}
