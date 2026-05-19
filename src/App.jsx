@@ -44,6 +44,21 @@ export default function App() {
 		nextScene,
 		prevScene,
 	} = useGameEngine();
+	useEffect(() => {
+		const sessionId = localStorage.getItem("sessionId") || crypto.randomUUID();
+
+		localStorage.setItem("sessionId", sessionId);
+
+		const interval = setInterval(() => {
+			fetch("/api/heartbeat", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ sessionId }),
+			}).catch(() => {});
+		}, 10000);
+
+		return () => clearInterval(interval);
+	}, []);
 
 	useEffect(() => {
 		const handler = (e) => {
@@ -190,6 +205,12 @@ export default function App() {
 					<meta name="author" content="Ghekiere Seppe" />
 				</Helmet>
 				<div className={appClassName}>
+					<MyceliumLayer
+						ref={myceliumRef}
+						blur={effects.blur}
+						sleepiness={effects.sleepiness ?? 0}
+						floatingTexts={statIndicators}
+					/>
 					<ReflectionScreen
 						onRestart={() => {
 							resetAll();
