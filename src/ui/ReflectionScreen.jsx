@@ -102,7 +102,7 @@ export default function ReflectionScreen({ onRestart, onClose }) {
           You do not need to stop using your phone completely.
         </p>
         <p style={{ marginBottom: "1rem" }}>
-          But noticing the moment before you open it —
+          But noticing the moment before you open it 
           that matters.
         </p>
         <p style={{

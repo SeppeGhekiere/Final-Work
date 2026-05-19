@@ -119,7 +119,7 @@ export default function MetaOverlay({ mode, onComplete }) {
           {stats.totalChoices > 0 && (
             <p className="stats-line">
               Average decision time:{" "}
-              <strong>{stats.avgReactionTime}s</strong>
+              <strong>{stats.avgReactionTime.minutes}m {stats.avgReactionTime.seconds}s</strong>
             </p>
           )}
           {stats.impulsiveChoices > stats.totalChoices * 0.5 && (

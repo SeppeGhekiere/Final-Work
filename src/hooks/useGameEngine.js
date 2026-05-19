@@ -5,6 +5,7 @@ import { getEffects, getSceneOverride, getSimulationProfile } from "../engine/ef
 import { applyChoice, onSceneEnter } from "../engine/sceneEngine";
 import { getAugmentedLines } from "../engine/narrativeEngine";
 import { gameState, updateState } from "../state/gameState";
+import { logEvent } from "../analytics/logEvent";
 
 const SCENE_KEYS = Object.keys(scenes);
 
@@ -97,6 +98,7 @@ export function useGameEngine() {
       setMetaState("reality_check");
       return;
     }
+    gameState.lastSceneEnterTime = Date.now();
     setIsDialogueFinished(true);
   }, []);
 
@@ -105,6 +107,7 @@ export function useGameEngine() {
       switch (current) {
         case "reality_check":
           realityCheckDoneRef.current = true;
+          gameState.lastSceneEnterTime = Date.now();
           setIsDialogueFinished(true);
           return null;
         case "personal_stats":
@@ -122,6 +125,21 @@ export function useGameEngine() {
 
   const handleChoice = useCallback((choice) => {
     const newState = applyChoice(gameState, choice);
+
+    const reactionTime = Date.now() - (gameState.lastSceneEnterTime || Date.now());
+    logEvent({
+      sessionId: gameState.sessionId,
+      scene: gameState.sceneId,
+      choice: choice.text,
+      reactionTime,
+      state: {
+        time_loss: newState.time_loss,
+        awareness: newState.awareness,
+        tension: newState.tension,
+        resistance: newState.resistance,
+      },
+      timestamp: Date.now(),
+    });
 
     const statMessages = [];
     if (newState.time_loss > prevStats.time_loss) {

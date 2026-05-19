@@ -115,7 +115,7 @@ body {
 	font-size: 18px;
 }
 
-/* Sleepiness overlay — darkens screen as fatigue increases */
+/* Sleepiness overlay darkens screen as fatigue increases */
 .sleepiness-overlay {
 	position: fixed;
 	inset: 0;
@@ -125,7 +125,7 @@ body {
 	transition: opacity 0.5s ease;
 }
 
-/* Drift animation for choice buttons — simulates slipping focus */
+/* Drift animation for choice buttons  simulates slipping focus */
 @keyframes drift {
 	0%,
 	100% {
@@ -142,7 +142,7 @@ body {
 	}
 }
 
-/* Jitter animation — tension/restlessness */
+/* Jitter animation  tension/restlessness */
 @keyframes jitter {
 	0%,
 	100% {
@@ -163,7 +163,7 @@ body {
 	animation: jitter 0.1s infinite;
 }
 
-/* Screen shake animation — high tension */
+/* Screen shake animation  high tension */
 @keyframes shake {
 	0%,
 	100% {
@@ -181,7 +181,7 @@ body {
 	animation: shake 0.2s infinite;
 }
 
-/* Fade in animation — for reflected choice */
+/* Fade in animation  for reflected choice */
 @keyframes fadeIn {
 	from {
 		opacity: 0;
@@ -193,7 +193,7 @@ body {
 	}
 }
 
-/* Reflected available — subtle glow for choices that become available after reflection */
+/* Reflected available  subtle glow for choices that become available after reflection */
 @keyframes reflectedGlow {
 	0%,
 	100% {
@@ -208,7 +208,7 @@ body {
 	animation: reflectedGlow 2s ease-in-out infinite;
 }
 
-/* Debug panel — top left, merged stats + buttons */
+/* Debug panel  top left, merged stats + buttons */
 .debug-panel {
 	position: fixed;
 	top: 12px;

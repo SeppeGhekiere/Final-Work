@@ -19,7 +19,7 @@ export default function InfoPage({ onStart, onHome, onProject }) {
           This is an interactive narrative about the way we scroll.
         </p>
         <p className="info-text">
-          It follows the shape of a familiar loop — the moment you reach for your
+          It follows the shape of a familiar loop, the moment you reach for your
           phone, the pull of another video, the minutes that slip by without notice.
         </p>
         <p className="info-text">

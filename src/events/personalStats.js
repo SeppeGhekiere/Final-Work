@@ -16,7 +16,7 @@ export function analyzePersonalStats() {
   if (totalChoices === 0) {
     return {
       totalChoices: 0,
-      avgReactionTime: 0,
+      avgReactionTime: { minutes: 0, seconds: 0 },
       impulsiveChoices: 0,
       hesitantChoices: 0,
       scrollChoices: 0,
@@ -48,7 +48,10 @@ export function analyzePersonalStats() {
 
   return {
     totalChoices,
-    avgReactionTime: Math.round((avgReactionTime / 100) * 10) / 10,
+    avgReactionTime: (() => {
+      const totalSec = Math.round(avgReactionTime / 1000);
+      return { minutes: Math.floor(totalSec / 60), seconds: totalSec % 60 };
+    })(),
     impulsiveChoices,
     hesitantChoices,
     scrollChoices,

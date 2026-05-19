@@ -29,7 +29,7 @@ export default function HomePage({ onStart, onInfo, onProject }) {
 
 			<section className="subhero-18">
 				<p className="subhero-intro">
-					What you&rsquo;re about to experience is a loop — the same one that plays out every time you reach
+					What you&rsquo;re about to experience is a loop, the same one that plays out every time you reach
 					for your phone without thinking. It&rsquo;s not about blame. It&rsquo;s about noticing.
 				</p>
 			</section>

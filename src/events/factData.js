@@ -8,6 +8,6 @@ export const facts = [
     footer: "Swipe. Judge. Repeat."
   },
   {
-    text: "People often report feeling less rested after doomscrolling — even though they opened their phone to relax."
+    text: "People often report feeling less rested after doomscrolling even though they opened their phone to relax."
   }
 ];

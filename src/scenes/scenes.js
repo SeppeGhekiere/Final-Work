@@ -7,7 +7,7 @@ export const scenes = {
 			{ text: "Not because you needed to.", pauseAfter: 800 },
 			{ text: "Just… because.", pauseAfter: 1000 },
 			{ text: "", pauseAfter: 700 },
-			{ text: "Five minutes later—", pauseAfter: 900 },
+			{ text: "Five minutes later...", pauseAfter: 900 },
 			{ text: "where were you?", pauseAfter: 1000 },
 			{ text: "", pauseAfter: 800 },
 			{ text: "This isn’t where it starts.", pauseAfter: 900 },
