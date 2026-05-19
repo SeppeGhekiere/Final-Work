@@ -115,6 +115,8 @@ export function useGameEngine() {
         case "personal_stats":
           return "cold_facts";
         case "cold_facts":
+          return "thank_you";
+        case "thank_you":
           setIsDialogueFinished(false);
           updateState({ sceneId: "reflection", tension: 0 });
           setRerenderKey((n) => n + 1);

@@ -464,7 +464,7 @@ body {
 
 /* Personal Stats */
 .stats-overlay {
-	background: #000;
+	background: rgba(0, 0, 0, 0.85);
 }
 
 .stats-content {
