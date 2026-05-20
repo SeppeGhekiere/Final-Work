@@ -86,7 +86,7 @@ export default function App() {
 		return (
 			<>
 				<Helmet>
-					<title>Doomscroll Project</title>
+					<title>The Loop</title>
 					<meta
 						name="description"
 						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
@@ -106,7 +106,7 @@ export default function App() {
 		return (
 			<>
 				<Helmet>
-					<title>Doomscroll Project</title>
+					<title>The Loop</title>
 					<meta
 						name="description"
 						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
@@ -126,7 +126,7 @@ export default function App() {
 		return (
 			<>
 				<Helmet>
-					<title>Doomscroll Project</title>
+					<title>The Loop</title>
 					<meta
 						name="description"
 						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
@@ -146,7 +146,7 @@ export default function App() {
 		return (
 			<>
 				<Helmet>
-					<title>Doomscroll Project</title>
+					<title>The Loop</title>
 				</Helmet>
 				<AudioPrompt onContinue={go("story")} />
 			</>
@@ -171,7 +171,7 @@ export default function App() {
 		return (
 			<>
 				<Helmet>
-					<title>Doomscroll Project</title>
+					<title>The Loop</title>
 					<meta
 						name="description"
 						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
@@ -193,7 +193,7 @@ export default function App() {
 		return (
 			<>
 				<Helmet>
-					<title>Doomscroll Project</title>
+					<title>The Loop</title>
 					<meta
 						name="description"
 						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
@@ -228,7 +228,7 @@ export default function App() {
 		return (
 			<>
 				<Helmet>
-					<title>Doomscroll Project</title>
+					<title>The Loop</title>
 					<meta
 						name="description"
 						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
@@ -249,7 +249,7 @@ export default function App() {
 	return (
 		<>
 			<Helmet>
-				<title>Doomscroll Project</title>
+				<title>The Loop</title>
 				<meta
 					name="description"
 					content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
