@@ -143,22 +143,16 @@ export default function DebugPanel({
             Blur: {manualOverrides.blur}
           </button>
           <button
-            className={manualOverrides.textJitter > 0 ? "active" : ""}
-            onClick={() => toggleEffect("textJitter", [0, 0.5, 1])}
-          >
-            Jitter: {manualOverrides.textJitter}
-          </button>
-          <button
             className={manualOverrides.choiceFade > 0 ? "active" : ""}
             onClick={() => toggleEffect("choiceFade", [0, 0.3, 0.6])}
           >
             ChoiceFade: {manualOverrides.choiceFade}
           </button>
           <button
-            className={manualOverrides.disappearChance > 0 ? "active" : ""}
-            onClick={() => toggleEffect("disappearChance", [0, 0.2, 0.4])}
+            className={manualOverrides.textJitter > 0 ? "active" : ""}
+            onClick={() => toggleEffect("textJitter", [0, 0.5, 1])}
           >
-            Disappear: {manualOverrides.disappearChance}
+            TextJitter: {manualOverrides.textJitter}
           </button>
         </div>
         <div className="debug-buttons-row">

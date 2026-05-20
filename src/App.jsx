@@ -161,7 +161,6 @@ export default function App() {
 
 	const appClassName = [
 		"app",
-		effects?.jitter > 0.2 && !suppressEffects ? "jitter" : "",
 		effects?.screenShake && !suppressEffects ? "shake" : "",
 	]
 		.filter(Boolean)

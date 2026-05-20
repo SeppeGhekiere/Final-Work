@@ -17,7 +17,7 @@ const simulationProfiles = {
 		inputDelay: 250,
 		choiceFade: 0.3,
 		choiceStability: 0.6,
-		disappearChance: 0.2,
+		disappearChance: 0,
 		autoScroll: true,
 	},
 	aware_loop: {
@@ -27,7 +27,7 @@ const simulationProfiles = {
 		inputDelay: 350,
 		choiceFade: 0.2,
 		choiceStability: 0.7,
-		disappearChance: 0.1,
+		disappearChance: 0,
 		autoScroll: false,
 	},
 	breaking: {
@@ -47,7 +47,7 @@ const simulationProfiles = {
 		inputDelay: 150,
 		choiceFade: 0.1,
 		choiceStability: 0.85,
-		disappearChance: 0.05,
+		disappearChance: 0,
 		autoScroll: false,
 	},
 };
@@ -80,7 +80,6 @@ const sceneEffects = {
 		override: {
 			blur: 3,
 			textJitter: 0.4,
-			disappearChance: 0.15,
 		},
 	},
 	scene7: {
@@ -91,7 +90,6 @@ const sceneEffects = {
 	},
 	scene8: {
 		override: {
-			disappearChance: 0.3,
 			inputDelay: 500,
 		},
 	},
@@ -104,7 +102,6 @@ const sceneEffects = {
 	scene10: {
 		override: {
 			inputDelay: 800,
-			disappearChance: 0.5,
 		},
 	},
 };
@@ -163,7 +160,7 @@ export function getEffects(state, forcedProfile = null) {
 		visualNoise: Math.min(tension / 20, 0.4),
 
 		// === AWARENESS effects (clarity - LOW = bad) ===
-		memoryDecay: Math.max(0, Math.min((10 - awareness) / 10, 1)),
+		memoryDecay: Math.max(0, (5 - awareness) / 5),
 
 		// === RESISTANCE effects (ability to choose - LOW = bad) ===
 		autoSelect: resistance <= 1,
