@@ -32,7 +32,6 @@ export function useGameEngine() {
   const [prevStats, setPrevStats] = useState({ ...INITIAL_STATS });
   const [manualOverrides, setManualOverrides] = useState(initialOverrides);
   const [forcedProfile, setForcedProfile] = useState(null);
-  const realityCheckDoneRef = useRef(false);
   const myceliumRef = useRef(null);
   const autoScrollRef = useRef(null);
 
@@ -96,10 +95,6 @@ export function useGameEngine() {
   );
 
   const handleDialogueFinish = useCallback(() => {
-    if (gameState.sceneId === "scene5" && !realityCheckDoneRef.current) {
-      setMetaState("reality_check");
-      return;
-    }
     gameState.lastSceneEnterTime = Date.now();
     setIsDialogueFinished(true);
   }, []);
@@ -107,11 +102,6 @@ export function useGameEngine() {
   const handleMetaComplete = useCallback(() => {
     setMetaState((current) => {
       switch (current) {
-        case "reality_check":
-          realityCheckDoneRef.current = true;
-          gameState.lastSceneEnterTime = Date.now();
-          setIsDialogueFinished(true);
-          return null;
         case "personal_stats":
           return "cold_facts";
         case "cold_facts":
@@ -209,7 +199,6 @@ export function useGameEngine() {
     setForcedProfile(null);
     setIsDialogueFinished(false);
     setMetaState(null);
-    realityCheckDoneRef.current = false;
     setRerenderKey(n => n + 1);
   };
 

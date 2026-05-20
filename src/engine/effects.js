@@ -76,7 +76,7 @@ const sceneEffects = {
 			autoScroll: false,
 		},
 	},
-	scene6: {
+	scene6_awareness: {
 		override: {
 			blur: 3,
 			textJitter: 0.4,
