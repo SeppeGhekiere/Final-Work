@@ -127,7 +127,7 @@ export function generateNest(time, group, tubes, connectionMaterial) {
 	const snapPoints = [];
 
 	for (let i = 0; i < CURVE_COUNT; i++) {
-		const { curve, startPoint, mid25, mid50, mid75, endPoint } = buildCurvePoints(30 + Math.random() * 50, snapPoints);
+		const { curve, startPoint, mid25, mid50, mid75, endPoint } = buildCurvePoints(30 + Math.random() * 150, []);
 
 		const radius = 0.7 + Math.sin(i * 0.3) * 0.1;
 		const reverseDirection = endPoint.z < startPoint.z;
