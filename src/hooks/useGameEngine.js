@@ -34,6 +34,7 @@ export function useGameEngine() {
   const [forcedProfile, setForcedProfile] = useState(null);
   const myceliumRef = useRef(null);
   const autoScrollRef = useRef(null);
+  const prevMetaRef = useRef(metaState);
 
   const scene = scenes[gameState.sceneId];
   const sceneIndex = SCENE_KEYS.indexOf(gameState.sceneId);
@@ -107,15 +108,24 @@ export function useGameEngine() {
         case "cold_facts":
           return "thank_you";
         case "thank_you":
-          setIsDialogueFinished(false);
-          updateState({ sceneId: "reflection", tension: 0 });
-          setRerenderKey((n) => n + 1);
           return null;
         default:
           return null;
       }
     });
   }, []);
+
+  // Transition from meta sequence to reflection screen
+  useEffect(() => {
+    const prev = prevMetaRef.current;
+    prevMetaRef.current = metaState;
+
+    if (prev === "thank_you" && metaState === null) {
+      setIsDialogueFinished(false);
+      updateState({ sceneId: "reflection", tension: 0 });
+      setRerenderKey((n) => n + 1);
+    }
+  }, [metaState]);
 
   const handleChoice = useCallback((choice) => {
     const newState = applyChoice(gameState, choice);
@@ -137,22 +147,22 @@ export function useGameEngine() {
 
     const statMessages = [];
     if (newState.time_loss > prevStats.time_loss) {
-      statMessages.push({ stat: "time_loss", text: "Time slips away...", color: "#0f0", index: statMessages.length });
+      statMessages.push({ stat: "time_loss", text: "Time slips away...", color: "#ff4444", index: statMessages.length });
     }
     if (newState.tension > prevStats.tension) {
-      statMessages.push({ stat: "tension", text: "Tension builds...", color: "#0f0", index: statMessages.length });
+      statMessages.push({ stat: "tension", text: "Tension builds...", color: "#ff4444", index: statMessages.length });
     }
     if (newState.awareness < prevStats.awareness) {
-      statMessages.push({ stat: "awareness", text: "Clarity fades...", color: "#0f0", index: statMessages.length });
+      statMessages.push({ stat: "awareness", text: "Clarity fades...", color: "#ff4444", index: statMessages.length });
     }
     if (newState.awareness > prevStats.awareness) {
-      statMessages.push({ stat: "awareness", text: "You feel more aware...", color: "#0f0", index: statMessages.length });
+      statMessages.push({ stat: "awareness", text: "You feel more aware...", color: "#ff4444", index: statMessages.length });
     }
     if (newState.resistance > prevStats.resistance) {
-      statMessages.push({ stat: "resistance", text: "You feel more aware of the pull...", color: "#0f0", index: statMessages.length });
+      statMessages.push({ stat: "resistance", text: "You feel more aware of the pull...", color: "#ff4444", index: statMessages.length });
     }
     if (newState.resistance < prevStats.resistance) {
-      statMessages.push({ stat: "resistance", text: "The pull gets stronger...", color: "#0f0", index: statMessages.length });
+      statMessages.push({ stat: "resistance", text: "The pull gets stronger...", color: "#ff4444", index: statMessages.length });
     }
 
     if (statMessages.length > 0) {

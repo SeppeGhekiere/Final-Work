@@ -217,6 +217,11 @@ export default function App() {
 							setPage("home");
 						}}
 						onClose={() => setShowGoodbye(true)}
+						onGoBack={() => {
+							resetAll();
+							setShowDebug(false);
+							setPage("home");
+						}}
 					/>
 				</div>
 			</>

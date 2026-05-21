@@ -771,6 +771,7 @@ body {
 .hero-svg {
 	width: 80%;
 	height: auto;
+	transform: translateY(10vh);
 }
 
 .subhero-18 {
