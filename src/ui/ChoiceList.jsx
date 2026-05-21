@@ -12,6 +12,7 @@ export default function ChoiceList({ choices, onSelect, effects }) {
   const [hiddenChoices, setHiddenChoices] = useState(new Set());
   const [choicesEnabled, setChoicesEnabled] = useState(false);
   const [reflectedIndices, setReflectedIndices] = useState(new Set());
+  const [isMobile, setIsMobile] = useState(false);
   const choiceStability = effects?.choiceStability ?? 1;
   const choiceFade = effects?.choiceFade ?? 0;
   const inputDelay = effects?.inputDelay ?? 0;
@@ -106,6 +107,15 @@ export default function ChoiceList({ choices, onSelect, effects }) {
     }
   }, [choices, disappearChance]);
 
+  // Track mobile layout via media query
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    setIsMobile(mq.matches);
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   // Filter to get visible choices with their correct positions
   // Also evaluate dynamic choice text
   const visibleChoices = useMemo(() => {
@@ -125,6 +135,9 @@ export default function ChoiceList({ choices, onSelect, effects }) {
         const isLeftChoice = visibleIndex % 2 === 0;
         const number = visibleIndex + 1;
         const hasDrift = effects.drift > 0.1;
+        const decorIndex = isMobile ? 1 : visibleIndex;
+        const alignClass = isMobile ? "choice-number-left" : (isLeftChoice ? "choice-number-right" : "choice-number-left");
+        const bgPos = isMobile ? "right center" : "center";
 
         // Override choices (very low resistance) - disable healthy choices
         let isDisabled = !choicesEnabled;
@@ -147,7 +160,8 @@ export default function ChoiceList({ choices, onSelect, effects }) {
             onClick={() => choicesEnabled && !isDisabled && onSelect(choice)}
             disabled={isDisabled}
             style={{
-              backgroundImage: `url(${decorImages[visibleIndex]})`,
+              backgroundImage: `url(${decorImages[decorIndex]})`,
+              backgroundPosition: bgPos,
               animationName: hasDrift ? "drift" : "none",
               animationDuration: hasDrift ? `${3 + visibleIndex * 0.5}s` : "0s",
               animationTimingFunction: "ease-in-out",
@@ -156,7 +170,7 @@ export default function ChoiceList({ choices, onSelect, effects }) {
               opacity: isDisabled ? 0.3 : (choicesEnabled ? Math.max(0.1, 1 - choiceFade) : 0.5),
               cursor: isDisabled ? "not-allowed" : (choicesEnabled ? "pointer" : "not-allowed"),
             }}
-            className={`${isLeftChoice ? "choice-number-right" : "choice-number-left"}${isReflected ? " reflected-available" : ""}`}
+            className={`${alignClass}${isReflected ? " reflected-available" : ""}`}
           >
             <span className="choice-text">{choice.displayText}</span>
             <span className="choice-number">{number}</span>

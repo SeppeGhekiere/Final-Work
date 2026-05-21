@@ -19,8 +19,11 @@ const VolumeIcon = () => (
 export default function AudioPrompt({ onContinue }) {
   return (
     <div className="audio-prompt-page" style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
       width: "100%",
-      minHeight: "100vh",
+      height: "100vh",
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
@@ -28,6 +31,8 @@ export default function AudioPrompt({ onContinue }) {
       textAlign: "center",
       color: "#e0e0e0",
       padding: "2rem",
+      boxSizing: "border-box",
+      overflow: "hidden",
       fontFamily: "'Montserrat', sans-serif"
     }}>
       <Background />

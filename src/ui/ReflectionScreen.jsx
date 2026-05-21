@@ -223,6 +223,15 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
   const hasCalledClose = useRef(false);
   const [aggregated, setAggregated] = useState(null);
   const [fetchError, setFetchError] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    setIsMobile(mq.matches);
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -298,7 +307,8 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
     <div className="reflection-screen" style={{
       maxWidth: "600px",
       margin: "0 auto",
-      padding: "2rem",
+      padding: isMobile ? "1.5rem 1rem" : "2rem",
+      boxSizing: "border-box",
       textAlign: "left",
       color: "#e0e0e0",
       lineHeight: "1.6",
@@ -318,7 +328,7 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
 
       {/* Title */}
       <h1 style={{
-        fontSize: "2rem",
+        fontSize: isMobile ? "1.5rem" : "2rem",
         marginBottom: "1.5rem",
         fontWeight: "300",
       }}>
@@ -397,7 +407,8 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
       {/* Buttons */}
       <div style={{
         display: "flex",
-        gap: "1rem",
+        flexDirection: isMobile ? "column" : "row",
+        gap: isMobile ? "0.75rem" : "1rem",
         justifyContent: "center",
       }}>
         <button
@@ -410,6 +421,8 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
             border: "1px solid #e0e0e0",
             color: "#e0e0e0",
             borderRadius: "4px",
+            width: isMobile ? "100%" : undefined,
+            textAlign: "center",
           }}
         >
           Close
@@ -424,6 +437,8 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
             border: "1px solid rgba(255,255,255,0.3)",
             color: "rgba(255,255,255,0.7)",
             borderRadius: "4px",
+            width: isMobile ? "100%" : undefined,
+            textAlign: "center",
           }}
         >
           Go Back
@@ -438,6 +453,8 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
             border: "1px solid #e0e0e0",
             color: "#1a1a1a",
             borderRadius: "4px",
+            width: isMobile ? "100%" : undefined,
+            textAlign: "center",
           }}
         >
           Restart experience

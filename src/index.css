@@ -838,7 +838,7 @@ body {
 		margin: 0 auto 28px;
 	}
 	.hero-graphic {
-		max-width: 260px;
+		display: none;
 	}
 	.subhero-18 {
 		text-align: center;
@@ -854,9 +854,18 @@ body {
 		font-size: 18px;
 		line-height: 28px;
 	}
+	.story-container {
+		width: 85%;
+	}
+	.choices-container {
+		width: 85%;
+	}
 }
 
 @media (max-width: 768px) {
+	body {
+		overflow: auto;
+	}
 	.home-nav {
 		padding: 0 24px;
 	}
@@ -868,13 +877,30 @@ body {
 		font-size: 26px;
 		line-height: 36px;
 	}
-	.hero-graphic {
-		max-width: 200px;
+	.app {
+		overflow-y: auto;
 	}
 	.subhero-18 {
 		padding: 0 24px 40px;
 	}
 	.quote-29 {
 		padding: 0 24px 48px;
+	}
+	.story-container {
+		width: 92%;
+	}
+	.choices-container {
+		width: 92%;
+	}
+	.choices-grid {
+		grid-template-columns: 1fr;
+	}
+	.choice-text {
+		white-space: normal;
+	}
+	.choices-grid button {
+		padding: 12px 10px;
+		font-size: 14px;
+		max-width: 250px;
 	}
 }
