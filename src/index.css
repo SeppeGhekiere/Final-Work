@@ -448,7 +448,7 @@ body {
 
 .stats-content {
 	max-width: 550px;
-	text-align: left;
+	text-align: center;
 	padding: 2rem;
 }
 
@@ -460,14 +460,14 @@ body {
 }
 
 .stats-line strong {
-	color: #fff;
+	color: var(--color-accent);
 	font-weight: 500;
 }
 
 /* Cold Facts */
 .facts-overlay {
-	background: #fff;
-	color: #111;
+	background: var(--color-bg);
+	color: var(--color-accent);
 }
 
 .facts-content {
@@ -477,29 +477,27 @@ body {
 }
 
 .fact-text {
-	font-size: 1.6rem;
-	line-height: 1.5;
-	font-weight: 300;
+	font-size: 1.2rem;
+	line-height: 1.6;
+	font-weight: 400;
 	animation: metaFadeIn 0.5s ease;
 }
 
 .fact-footer {
 	font-size: 1rem;
-	opacity: 0.5;
 	margin-top: 1.5rem;
-	font-style: italic;
 	animation: metaFadeIn 0.5s ease;
 }
 
 .facts-overlay .meta-continue-btn {
-	border-color: #555;
-	color: #333;
+	border-color: var(--color-accent);
+	color: var(--color-accent);
 	margin-top: 2rem;
 }
 
 .facts-overlay .meta-continue-btn:hover {
-	border-color: #000;
-	color: #000;
+	border-color: var(--color-accent-hover);
+	color: var(--color-accent-hover);
 }
 
 @keyframes metaFadeIn {

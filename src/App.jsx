@@ -204,12 +204,6 @@ export default function App() {
 					<meta name="author" content="Ghekiere Seppe" />
 				</Helmet>
 				<div className={appClassName}>
-					<MyceliumLayer
-						ref={myceliumRef}
-						blur={effects.blur}
-						sleepiness={effects.sleepiness ?? 0}
-						floatingTexts={statIndicators}
-					/>
 					<ReflectionScreen
 						onRestart={() => {
 							resetAll();

@@ -1,6 +1,7 @@
 import { getInteractionState } from "../state/interactionState";
 
 export function getAugmentedLines(scene, state) {
+  if (!scene) return [];
   const dynamicLines = [];
   const interaction = getInteractionState();
   

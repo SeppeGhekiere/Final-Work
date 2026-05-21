@@ -129,6 +129,32 @@ export default function ChoiceList({ choices, onSelect, effects }) {
       .filter(({ originalIndex }) => !hiddenChoices.has(originalIndex));
   }, [choices, hiddenChoices]);
 
+  // Keyboard shortcut: number keys 1-4 to select choices
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const key = e.key;
+      if (!["1", "2", "3", "4"].includes(key)) return;
+      if (!choicesEnabled) return;
+
+      const index = parseInt(key, 10) - 1;
+      if (index >= visibleChoices.length) return;
+
+      const { choice, originalIndex } = visibleChoices[index];
+
+      const isDisabled = overrideChoices && choice.effects &&
+          (choice.effects.resistance || choice.effects.awareness) &&
+          !reflectedIndices.has(originalIndex);
+
+      if (!isDisabled) {
+        e.preventDefault();
+        onSelect(choice);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [choicesEnabled, visibleChoices, overrideChoices, reflectedIndices, onSelect]);
+
   return (
     <div className="choices-grid">
       {visibleChoices.map(({ choice, originalIndex }, visibleIndex) => {
