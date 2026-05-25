@@ -1,320 +1,73 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { useGameEngine } from "./hooks/useGameEngine";
-import { playRoomSound, ensureAudioContext } from "./hooks/useSound";
-import { Helmet } from "react-helmet-async";
+import { useHeartbeat } from "./hooks/useHeartbeat";
+import { useAudioInit } from "./hooks/useAudioInit";
+import { useKeyboardShortcut } from "./hooks/useKeyboardShortcut";
+
+import SeoHelmet from "./components/SeoHelmet";
+import StoryLayout from "./components/StoryLayout";
+import GoodbyeScreen from "./components/GoodbyeScreen";
 
 import HomePage from "./ui/HomePage";
 import InfoPage from "./ui/InfoPage";
 import ProjectPage from "./ui/ProjectPage";
 import AudioPrompt from "./ui/AudioPrompt";
-import DialogueBox from "./ui/DialogueBox";
-import ChoiceList from "./ui/ChoiceList";
-import MyceliumLayer from "./ui/MyceliumLayer";
-import ReflectionScreen from "./ui/ReflectionScreen";
-import MetaOverlay from "./ui/MetaOverlay";
-import DebugPanel from "./ui/DebugPanel";
 
 export default function App() {
-	const [page, setPage] = useState("home");
-	const [showDebug, setShowDebug] = useState(false);
-	const [showGoodbye, setShowGoodbye] = useState(false);
-	const stopRoomRef = useRef(null);
+  const navigate = useNavigate();
+  const engine = useGameEngine();
+  const [showDebug, setShowDebug] = useState(false);
+  const [showGoodbye, setShowGoodbye] = useState(false);
 
-	const {
-		state,
-		scene,
-		effects,
-		fullLines,
-		profile,
-		autoProfile,
-		sceneOverride,
-		isDialogueFinished,
-		metaState,
-		statIndicators,
-		manualOverrides,
-		forcedProfile,
-		myceliumRef,
-		handleDialogueFinish,
-		handleChoice,
-		handleMetaComplete,
-		setForcedProfile,
-		addStat,
-		toggleEffect,
-		resetAll,
-		nextScene,
-		prevScene,
-	} = useGameEngine();
-	useEffect(() => {
-		const sessionId = localStorage.getItem("sessionId") || crypto.randomUUID();
+  useHeartbeat();
+  useAudioInit();
+  useKeyboardShortcut("p", () => setShowDebug((prev) => !prev));
 
-		localStorage.setItem("sessionId", sessionId);
+  const go = (path) => () => navigate(path);
 
-		const interval = setInterval(() => {
-			fetch("/api/heartbeat", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ sessionId }),
-			}).catch(() => {});
-		}, 10000);
+  const goHome = () => {
+    setShowGoodbye(false);
+    setShowDebug(false);
+    navigate("/");
+  };
 
-		return () => clearInterval(interval);
-	}, []);
+  if (showGoodbye) {
+    return <GoodbyeScreen />;
+  }
 
-	useEffect(() => {
-		const handler = (e) => {
-			if (e.key === "p" || e.key === "P") {
-				setShowDebug((prev) => !prev);
-			}
-		};
-		window.addEventListener("keydown", handler);
-		return () => window.removeEventListener("keydown", handler);
-	}, []);
-
-	useEffect(() => {
-		const handler = () => {
-			ensureAudioContext();
-			const stop = playRoomSound();
-			stopRoomRef.current = stop;
-		};
-		document.addEventListener("click", handler, { once: true });
-		return () => document.removeEventListener("click", handler);
-	}, []);
-
-	const go = (p) => () => setPage(p);
-
-	if (page === "home") {
-		return (
-			<>
-				<Helmet>
-					<title>The Loop</title>
-					<meta
-						name="description"
-						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
-					/>
-					<meta
-						name="keywords"
-						content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe"
-					/>
-					<meta name="author" content="Ghekiere Seppe" />
-				</Helmet>
-				<HomePage onStart={go("info")} onInfo={go("info")} onProject={go("project")} />
-			</>
-		);
-	}
-
-	if (page === "info") {
-		return (
-			<>
-				<Helmet>
-					<title>The Loop</title>
-					<meta
-						name="description"
-						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
-					/>
-					<meta
-						name="keywords"
-						content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe"
-					/>
-					<meta name="author" content="Ghekiere Seppe" />
-				</Helmet>
-				<InfoPage onHome={go("home")} onProject={go("project")} onStart={go("audio_prompt")} />
-			</>
-		);
-	}
-
-	if (page === "project") {
-		return (
-			<>
-				<Helmet>
-					<title>The Loop</title>
-					<meta
-						name="description"
-						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
-					/>
-					<meta
-						name="keywords"
-						content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe"
-					/>
-					<meta name="author" content="Ghekiere Seppe" />
-				</Helmet>
-				<ProjectPage onHome={go("home")} onInfo={go("info")} onStart={go("audio_prompt")} />
-			</>
-		);
-	}
-
-	if (page === "audio_prompt") {
-		return (
-			<>
-				<Helmet>
-					<title>The Loop</title>
-				</Helmet>
-				<AudioPrompt onContinue={go("story")} />
-			</>
-		);
-	}
-
-	const showEnding = state.sceneId?.startsWith("ending") || state.sceneId === "reflection";
-
-	const isMetaActive = !!metaState;
-	const isReflection = state.sceneId === "reflection";
-	const suppressEffects = isMetaActive || isReflection;
-
-	const appClassName = [
-		"app",
-		effects?.screenShake && !suppressEffects ? "shake" : "",
-	]
-		.filter(Boolean)
-		.join(" ");
-
-	if (showGoodbye) {
-		return (
-			<>
-				<Helmet>
-					<title>The Loop</title>
-					<meta
-						name="description"
-						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
-					/>
-					<meta
-						name="keywords"
-						content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe"
-					/>
-					<meta name="author" content="Ghekiere Seppe" />
-				</Helmet>
-				<div className="app">
-					<p>Thanks for playing.</p>
-				</div>
-			</>
-		);
-	}
-
-	if (state.sceneId === "reflection") {
-		return (
-			<>
-				<Helmet>
-					<title>The Loop</title>
-					<meta
-						name="description"
-						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
-					/>
-					<meta
-						name="keywords"
-						content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe"
-					/>
-					<meta name="author" content="Ghekiere Seppe" />
-				</Helmet>
-				<div className={appClassName}>
-					<ReflectionScreen
-						onRestart={() => {
-							resetAll();
-							setShowDebug(false);
-							setPage("home");
-						}}
-						onClose={() => setShowGoodbye(true)}
-						onGoBack={() => {
-							resetAll();
-							setShowDebug(false);
-							setPage("home");
-						}}
-					/>
-				</div>
-			</>
-		);
-	}
-
-	if (!scene && !showEnding) {
-		return (
-			<>
-				<Helmet>
-					<title>The Loop</title>
-					<meta
-						name="description"
-						content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
-					/>
-					<meta
-						name="keywords"
-						content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe"
-					/>
-					<meta name="author" content="Ghekiere Seppe" />
-				</Helmet>
-				<div className={appClassName}>
-					<p>The End</p>
-				</div>
-			</>
-		);
-	}
-
-	return (
-		<>
-			<Helmet>
-				<title>The Loop</title>
-				<meta
-					name="description"
-					content="Doomscroll - an interactive narrative experience about digital fatigue, doomscrolling, and self-reflection."
-				/>
-				<meta
-					name="keywords"
-					content="doomscroll, interactive fiction, narrative experience, ghekiere seppe, ghekiereseppe, gekiereseppe, ghekierseppe, seppe ghekiere, ghekiere, ghekieresepe, ghekiersepe"
-				/>
-				<meta name="author" content="Ghekiere Seppe" />
-			</Helmet>
-			<div className={appClassName}>
-				{showDebug && (
-					<DebugPanel
-						profile={profile}
-						autoProfile={autoProfile}
-						forcedProfile={forcedProfile}
-						setForcedProfile={setForcedProfile}
-						state={state}
-						sceneOverride={sceneOverride}
-						effects={effects}
-						addStat={addStat}
-						prevScene={prevScene}
-						nextScene={nextScene}
-						resetAll={resetAll}
-						manualOverrides={manualOverrides}
-						toggleEffect={toggleEffect}
-					/>
-				)}
-
-				<MyceliumLayer
-					ref={myceliumRef}
-					blur={effects.blur}
-					sleepiness={effects.sleepiness ?? 0}
-					floatingTexts={statIndicators}
-				/>
-
-				{(!metaState || metaState === "reality_check") && (
-					<>
-						<div className="story-container">
-							<DialogueBox lines={fullLines} effects={effects} onFinish={handleDialogueFinish} />
-						</div>
-
-						<div className="choices-container">
-							{isDialogueFinished && !metaState && (
-								<ChoiceList choices={scene.choices} onSelect={handleChoice} effects={effects} />
-							)}
-						</div>
-					</>
-				)}
-
-				{metaState && <MetaOverlay key={metaState} mode={metaState} onComplete={handleMetaComplete} />}
-
-				{effects?.visualNoise > 0 && (
-					<div
-						className="visual-noise-overlay"
-						style={{
-							position: "fixed",
-							inset: 0,
-							pointerEvents: "none",
-							zIndex: 5,
-							opacity: effects.visualNoise,
-							backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
-							mixBlendMode: "overlay",
-						}}
-					/>
-				)}
-			</div>
-		</>
-	);
+  return (
+    <>
+      <SeoHelmet />
+      <Routes>
+        <Route
+          path="/"
+          element={<HomePage onStart={go("/info")} onInfo={go("/info")} onProject={go("/project")} />}
+        />
+        <Route
+          path="/info"
+          element={<InfoPage onHome={go("/")} onProject={go("/project")} onStart={go("/audio-prompt")} />}
+        />
+        <Route
+          path="/project"
+          element={<ProjectPage onHome={go("/")} onInfo={go("/info")} onStart={go("/audio-prompt")} />}
+        />
+        <Route
+          path="/audio-prompt"
+          element={<AudioPrompt onContinue={go("/story")} />}
+        />
+        <Route
+          path="/story"
+          element={
+            <StoryLayout
+              engine={engine}
+              showDebug={showDebug}
+              onGoodbye={() => setShowGoodbye(true)}
+              onHome={goHome}
+            />
+          }
+        />
+      </Routes>
+    </>
+  );
 }

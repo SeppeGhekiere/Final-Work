@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { gameState } from "../state/gameState";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export default function ChoiceList({ choices, onSelect, effects }) {
   const decorImages = [
@@ -12,18 +13,16 @@ export default function ChoiceList({ choices, onSelect, effects }) {
   const [hiddenChoices, setHiddenChoices] = useState(new Set());
   const [choicesEnabled, setChoicesEnabled] = useState(false);
   const [reflectedIndices, setReflectedIndices] = useState(new Set());
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const choiceStability = effects?.choiceStability ?? 1;
   const choiceFade = effects?.choiceFade ?? 0;
   const inputDelay = effects?.inputDelay ?? 0;
   const disappearChance = effects?.disappearChance ?? 0;
 
-  // Resistance effects
   const autoSelect = effects?.autoSelect ?? false;
   const overrideChoices = effects?.overrideChoices ?? false;
   const autoSelectTimerRef = useRef(null);
 
-  // Handle input delay
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- reset state when choices change */
     setChoicesEnabled(false);
@@ -34,7 +33,6 @@ export default function ChoiceList({ choices, onSelect, effects }) {
     return () => clearTimeout(timer);
   }, [choices, inputDelay]);
 
-  // Handle auto-select (low resistance)
   useEffect(() => {
     if (autoSelect && choices.length > 0) {
       autoSelectTimerRef.current = setTimeout(() => {
@@ -54,37 +52,33 @@ export default function ChoiceList({ choices, onSelect, effects }) {
     };
   }, [choices, autoSelect, hiddenChoices, onSelect]);
 
-  // Handle enable reflected choices - disabled positive choices become available after 5 seconds
   useEffect(() => {
     if (!overrideChoices) return;
-    
+
     const reflected = new Set();
     choices.forEach((choice, i) => {
       if (choice.effects && (choice.effects.awareness || choice.effects.resistance)) {
         reflected.add(i);
       }
     });
-    
+
     if (reflected.size === 0) return;
-    
+
     const timer = setTimeout(() => {
       setReflectedIndices(reflected);
     }, 5000);
-    
+
     return () => clearTimeout(timer);
   }, [choices, overrideChoices]);
 
-  // Handle choice instability (both legacy and new system)
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect -- needed to compute unstable choices when props change */
     const stability = choiceStability;
     if (stability < 1) {
-      // Randomly offset choices that fail the stability check
       setHiddenChoices(
         new Set(choices.map((_, i) => i).filter(() => Math.random() > stability))
       );
     } else if (effects.choiceInstability) {
-      // Legacy system
       setHiddenChoices(
         new Set(choices.map((_, i) => i).filter(() => Math.random() < 0.15))
       );
@@ -93,7 +87,6 @@ export default function ChoiceList({ choices, onSelect, effects }) {
     }
   }, [choices, choiceStability, effects.choiceInstability]);
 
-  // Handle disappear chance (memory loss effect)
   useEffect(() => {
     if (disappearChance > 0 && choices.length > 0) {
       const timer = setTimeout(() => {
@@ -107,29 +100,17 @@ export default function ChoiceList({ choices, onSelect, effects }) {
     }
   }, [choices, disappearChance]);
 
-  // Track mobile layout via media query
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 768px)");
-    setIsMobile(mq.matches);
-    const handler = (e) => setIsMobile(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  // Filter to get visible choices with their correct positions
-  // Also evaluate dynamic choice text
   const visibleChoices = useMemo(() => {
     return choices
       .map((choice, i) => {
-        const text = typeof choice.text === "function" 
-          ? choice.text(gameState) 
+        const text = typeof choice.text === "function"
+          ? choice.text(gameState)
           : choice.text;
         return { choice: { ...choice, displayText: text }, originalIndex: i };
       })
       .filter(({ originalIndex }) => !hiddenChoices.has(originalIndex));
   }, [choices, hiddenChoices]);
 
-  // Keyboard shortcut: number keys 1-4 to select choices
   useEffect(() => {
     const handleKeyDown = (e) => {
       const key = e.key;
@@ -165,14 +146,12 @@ export default function ChoiceList({ choices, onSelect, effects }) {
         const alignClass = isMobile ? "choice-number-left" : (isLeftChoice ? "choice-number-right" : "choice-number-left");
         const bgPos = isMobile ? "right center" : "center";
 
-        // Override choices (very low resistance) - disable healthy choices
         let isDisabled = !choicesEnabled;
         let isReflected = false;
         if (overrideChoices && choice.effects) {
           const hasHealthyEffect = choice.effects.resistance || choice.effects.awareness;
           if (hasHealthyEffect) {
             isDisabled = true;
-            // Check if this choice is now reflected/available
             if (reflectedIndices.has(originalIndex)) {
               isDisabled = false;
               isReflected = true;

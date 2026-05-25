@@ -171,6 +171,22 @@ export function getEffects(state, forcedProfile = null) {
 	};
 }
 
+export const profileLabels = {
+  deep_scroll: "Deep Scroll",
+  aware_loop: "Aware Loop",
+  breaking: "Breaking Free",
+  uneasy: "Uneasy",
+  neutral: "Neutral",
+};
+
+export const profileTitles = {
+  deep_scroll: "Doom Scroll",
+  aware_loop: "Aware",
+  breaking: "Breaking",
+  uneasy: "Uneasy",
+  neutral: "Neutral",
+};
+
 export function getEnding(state) {
 	if (state.time_loss >= 12 && state.awareness <= 3) return "endingA";
 	if (state.time_loss >= 10 && state.awareness >= 5) return "endingB";
