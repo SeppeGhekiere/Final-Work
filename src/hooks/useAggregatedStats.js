@@ -19,6 +19,7 @@ export function useAggregatedStats() {
       })
       .then((data) => {
         if (mounted) {
+          console.log("[STATS] response:", data);
           cachedAggregated = data;
           setAggregated(data);
         }

@@ -8,6 +8,12 @@ function getSessionId() {
   return id
 }
 
+export function regenerateSessionId() {
+  const id = crypto.randomUUID()
+  localStorage.setItem("doomscroll_sessionId", id)
+  gameState.sessionId = id
+}
+
 export const gameState = {
   sceneId: "scene1",
   sessionId: getSessionId(),

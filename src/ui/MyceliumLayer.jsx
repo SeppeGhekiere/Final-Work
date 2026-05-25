@@ -18,10 +18,7 @@ const MyceliumLayer = forwardRef(function MyceliumLayer({ blur = 0, sleepiness =
   useEffect(() => {
     if (!floatingTexts || floatingTexts.length === 0) return;
     
-    console.log('MyceliumLayer received floatingTexts:', floatingTexts);
-    
     floatingTexts.forEach((item) => {
-      console.log('Calling addFloatingText:', item.text, item.color, 'index:', item.index);
       worldRef.current?.addFloatingText(item.text, item.color, item.index || 0);
     });
   }, [floatingTexts]);

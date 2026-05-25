@@ -1,6 +1,12 @@
 import Background from "./Background";
+import { regenerateSessionId } from "../state/gameState";
 
 export default function HomePage({ onStart, onInfo, onProject }) {
+	const handleStart = () => {
+		regenerateSessionId();
+		onStart();
+	};
+
 	return (
 		<div className="homepage-1">
 			<Background />
@@ -18,7 +24,7 @@ export default function HomePage({ onStart, onInfo, onProject }) {
 					<p className="hero-sub">
 						An interactive experience about attention, habit, and quiet loss of time.
 					</p>
-					<button className="hero-btn" onClick={onStart}>
+					<button className="hero-btn" onClick={handleStart}>
 						Find Out
 					</button>
 				</div>

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { gameState } from "../state/gameState";
+import { gameState, regenerateSessionId } from "../state/gameState";
 import { getSimulationProfile, getEnding, profileTitles } from "../engine/effects";
 import { getInteractionState } from "../state/interactionState";
 import { useIsMobile } from "../hooks/useIsMobile";
@@ -36,10 +36,11 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
 		dynamicLines.push("You tried to stop.");
 	}
 
-	const handleRestart = () => {
-		if (hasCalledClose.current) return;
-		hasCalledClose.current = true;
-		Object.assign(gameState, {
+  const handleRestart = () => {
+    if (hasCalledClose.current) return;
+    hasCalledClose.current = true;
+    regenerateSessionId();
+    Object.assign(gameState, {
 			sceneId: "scene1",
 			time_loss: 0,
 			tension: 0,
@@ -55,10 +56,11 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
 		onClose?.();
 	};
 
-	const handleGoBack = () => {
-		if (hasCalledClose.current) return;
-		hasCalledClose.current = true;
-		Object.assign(gameState, {
+  const handleGoBack = () => {
+    if (hasCalledClose.current) return;
+    hasCalledClose.current = true;
+    regenerateSessionId();
+    Object.assign(gameState, {
 			sceneId: "scene1",
 			time_loss: 0,
 			tension: 0,
@@ -220,22 +222,6 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
 				}}
 			>
 				<button
-					onClick={handleClose}
-					style={{
-						padding: "0.75rem 2rem",
-						fontSize: "1rem",
-						cursor: "pointer",
-						background: "transparent",
-						border: "1px solid #e0e0e0",
-						color: "#e0e0e0",
-						borderRadius: "4px",
-						width: isMobile ? "100%" : undefined,
-						textAlign: "center",
-					}}
-				>
-					Close
-				</button>
-				<button
 					onClick={handleGoBack}
 					style={{
 						padding: "0.75rem 2rem",
@@ -257,15 +243,39 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
 						padding: "0.75rem 2rem",
 						fontSize: "1rem",
 						cursor: "pointer",
-						background: "#e0e0e0",
-						border: "1px solid #e0e0e0",
-						color: "#1a1a1a",
+						// background: "#e0e0e0",
+						// border: "1px solid #e0e0e0",
+						// color: "#1a1a1a",
+						background: "transparent",
+						border: "1px solid rgba(255,255,255,0.3)",
+						color: "rgba(255,255,255,0.7)",
 						borderRadius: "4px",
 						width: isMobile ? "100%" : undefined,
 						textAlign: "center",
 					}}
 				>
 					Restart experience
+				</button>
+				<button
+					onClick={() =>
+						window.open(
+							"https://docs.google.com/forms/d/e/1FAIpQLSdRME4j6yCDipjKoiHAezIJRmixouqu1KpwJ7cZcpipXT2RaQ/viewform?usp=publish-editor",
+							"_blank",
+						)
+					}
+					style={{
+						padding: "0.75rem 2rem",
+						fontSize: "1rem",
+						cursor: "pointer",
+						background: "var(--color-accent)",
+						border: "1px solid var(--color-accent)",
+						color: "#fff",
+						borderRadius: "4px",
+						width: isMobile ? "100%" : undefined,
+						textAlign: "center",
+					}}
+				>
+					Fill out survey
 				</button>
 			</div>
 		</div>

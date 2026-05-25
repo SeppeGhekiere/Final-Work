@@ -549,6 +549,7 @@ body {
 .project-page {
 	width: 100%;
 	min-height: 100vh;
+	overflow-y: auto;
 	color: var(--color-text);
 	font-family: "Montserrat", sans-serif;
 }

@@ -2,8 +2,6 @@ import DebugPanel from "../ui/DebugPanel";
 import MyceliumLayer from "../ui/MyceliumLayer";
 import DialogueBox from "../ui/DialogueBox";
 import ChoiceList from "../ui/ChoiceList";
-import ReactionPage from "../ui/ReactionPage";
-import ComparisonPage from "../ui/ComparisonPage";
 import FinalPage from "../ui/FinalPage";
 import MetaOverlay from "../ui/MetaOverlay";
 import ReflectionScreen from "../ui/ReflectionScreen";
@@ -110,8 +108,6 @@ export default function StoryLayout({ engine, showDebug, onGoodbye, onHome }) {
         </>
       )}
 
-      {metaState === "reaction_time" && <ReactionPage onNext={handleMetaComplete} />}
-      {metaState === "comparison" && <ComparisonPage onContinue={handleMetaComplete} />}
       {metaState === "final" && (
         <FinalPage
           onResults={() => handleMetaComplete()}
