@@ -7,7 +7,7 @@ export default function ColdFactsOverlay({ onComplete }) {
   const [factIndex, setFactIndex] = useState(0);
 
   useEffect(() => {
-    const t = setTimeout(() => setButtonEnabled(true), 4000);
+    const t = setTimeout(() => setButtonEnabled(true), 1000);
     return () => clearTimeout(t);
   }, []);
 
@@ -16,7 +16,7 @@ export default function ColdFactsOverlay({ onComplete }) {
       setStep((i) => i + 1);
       setFactIndex((i) => i + 1);
       setButtonEnabled(false);
-      setTimeout(() => setButtonEnabled(true), 2500);
+      setTimeout(() => setButtonEnabled(true), 1000);
     } else {
       onComplete();
     }

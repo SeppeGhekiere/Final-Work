@@ -9,7 +9,7 @@ export default function ComparisonPage({ onContinue }) {
   const userStats = { ending: getEnding(state) };
 
   return (
-    <div className="meta-overlay" style={{ background: "var(--color-bg)", overflowY: "auto" }}>
+    <div style={{ position: "absolute", inset: 0, background: "var(--color-bg)", overflowY: "auto" }}>
       <div className="stats-content" style={{ textAlign: "center" }}>
         <h2 style={{ fontWeight: 300, marginBottom: "2rem", color: "var(--color-accent)" }}>
           Compared to Others

@@ -68,6 +68,10 @@ export function gameReducer(state, action) {
     case "SET_FORCED_PROFILE":
       return { ...state, forcedProfile: action.profile };
 
+    case "TRIGGER_REALITY_CHECK":
+      if (state.metaState !== null) return state;
+      return { ...state, metaState: "reality_check", prevMetaState: state.metaState };
+
     case "RESET":
       return { ...initialState, rerenderKey: state.rerenderKey + 1 };
 

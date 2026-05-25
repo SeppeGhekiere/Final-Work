@@ -19,7 +19,7 @@ export default function RealityCheckOverlay({ onComplete }) {
         setDimmed(true);
         setStep(1);
       }
-    }, 4500);
+    }, 6000);
 
     const t3 = setTimeout(() => {
       if (mounted) setStep(2);

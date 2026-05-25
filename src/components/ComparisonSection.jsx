@@ -12,22 +12,20 @@ export default function ComparisonSection({ userStats, aggregated }) {
   return (
     <div
       style={{
-        marginTop: "2rem",
-        marginBottom: "2rem",
-        padding: "1.5rem",
-        borderTop: "1px solid rgba(255,255,255,0.1)",
-        borderBottom: "1px solid rgba(255,255,255,0.1)",
+        marginTop: "1rem",
+        marginBottom: "1rem",
+        padding: "1rem",
       }}
     >
       <h2
         style={{
-          fontSize: "1.2rem",
+          fontSize: "1rem",
           fontWeight: "300",
-          marginBottom: "1.5rem",
+          marginBottom: "1rem",
           opacity: 0.7,
         }}
       >
-        Compared to Other Participants
+        Compared to Others
       </h2>
 
       {totalSessions > 0 && (

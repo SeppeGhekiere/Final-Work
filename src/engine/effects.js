@@ -177,6 +177,10 @@ export const profileLabels = {
   breaking: "Breaking Free",
   uneasy: "Uneasy",
   neutral: "Neutral",
+  endingA: "Lost in Time",
+  endingB: "Trapped in the Loop",
+  endingC: "Broke the Pattern",
+  endingD: "On Edge",
 };
 
 export const profileTitles = {

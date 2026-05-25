@@ -52,7 +52,11 @@ export function useGameEngine() {
     }
     window.scrollTo(0, 0);
     onSceneEnter();
-  }, [rerenderKey]);
+
+    if (gameState.sceneId?.startsWith("scene5") && metaState === null) {
+      dispatch({ type: "TRIGGER_REALITY_CHECK" });
+    }
+  }, [rerenderKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (effects.autoScroll && !autoScrollRef.current) {
