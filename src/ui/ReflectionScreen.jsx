@@ -122,7 +122,7 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
 					overflow: "hidden",
 				}}
 			>
-				<div style={{ flex: "2", overflowY: "hidden" }}>
+				<div className="reflection-left" style={{ flex: "2", overflowY: "auto" }}>
 					<ReactionTimeChart clickTimes={interaction.clickTimes} />
 
 					<p style={{ marginBottom: "0.5rem" }}>What you just experienced isn't random.</p>

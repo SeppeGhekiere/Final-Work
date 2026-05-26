@@ -1,0 +1,531 @@
+.app {
+	height: 100vh;
+	width: 100vw;
+	position: relative;
+	overflow: hidden;
+}
+
+.app::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.5) 100%);
+	pointer-events: none;
+}
+
+.story-container {
+	position: absolute;
+	top: 15%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 60%;
+	max-width: 700px;
+	text-align: center;
+	line-height: 1.6;
+	z-index: 10;
+}
+
+.choices-container {
+	position: absolute;
+	bottom: 5%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 60%;
+	max-width: 600px;
+	z-index: 10;
+}
+
+.choices-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: 1fr 1fr;
+	gap: 12px;
+	justify-items: center;
+	align-items: center;
+	min-height: 120px;
+}
+
+.choices-grid button {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	padding: 14px;
+	background-repeat: no-repeat;
+	background-size: contain;
+	background-position: center;
+	color: white;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-size: 16px;
+	background-color: transparent;
+	border: none;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.choices-grid button:hover {
+	filter: brightness(0) saturate(100%) invert(39%) sepia(37%) saturate(4450%) hue-rotate(10deg) brightness(90%)
+		contrast(93%);
+}
+
+.choice-number-left {
+	flex-direction: row-reverse;
+	text-align: right;
+}
+.choice-number-right {
+	flex-direction: reverse;
+	text-align: left;
+}
+
+.choice-number-left .choice-number {
+	margin-right: 2rem;
+}
+.choice-number-right .choice-number {
+	margin-left: 2rem;
+}
+
+.choice-text {
+	white-space: normal;
+}
+
+.choice-number {
+	font-size: 14px;
+	opacity: 0.7;
+}
+
+.dialogue-box {
+	transition: filter 0.8s ease;
+}
+
+.dialogue-box p {
+	margin: 8px 0;
+	font-size: 18px;
+}
+
+.sleepiness-overlay {
+	position: fixed;
+	inset: 0;
+	background: #000;
+	pointer-events: none;
+	z-index: 100;
+	transition: opacity 0.5s ease;
+}
+
+@keyframes drift {
+	0%,
+	100% {
+		transform: translate(0, 0);
+	}
+	25% {
+		transform: translate(2px, -1px);
+	}
+	50% {
+		transform: translate(-1px, 2px);
+	}
+	75% {
+		transform: translate(-2px, -1px);
+	}
+}
+
+@keyframes shake {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-2px);
+	}
+	75% {
+		transform: translateX(2px);
+	}
+}
+
+.shake {
+	animation: shake 0.2s infinite;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes reflectedGlow {
+	0%,
+	100% {
+		box-shadow: inset 0 0 0 2px rgba(100, 200, 150, 0.2);
+	}
+	50% {
+		box-shadow: inset 0 0 0 2px rgba(100, 200, 150, 0.5);
+	}
+}
+
+.reflected-available {
+	animation: reflectedGlow 2s ease-in-out infinite;
+}
+
+.debug-panel {
+	position: fixed;
+	top: 12px;
+	left: 12px;
+	z-index: 200;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	pointer-events: auto;
+}
+
+.debug-stats {
+	font-family: monospace;
+	font-size: 14px;
+	color: #0f0;
+	background: rgba(0, 0, 0, 0.7);
+	padding: 12px 16px;
+	border: 1px solid #0f0;
+	border-radius: 4px;
+	line-height: 1.6;
+}
+
+.debug-stat-buttons {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 4px;
+}
+
+.debug-stat-buttons button {
+	background: rgba(0, 0, 0, 0.8);
+	color: #0f0;
+	border: 1px solid #0f0;
+	padding: 6px 8px;
+	font-family: monospace;
+	font-size: 12px;
+	cursor: pointer;
+	border-radius: 3px;
+	transition: background 0.15s ease;
+}
+
+.debug-stat-buttons button:hover {
+	background: rgba(0, 255, 0, 0.15);
+}
+
+.debug-effect-buttons {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 4px;
+}
+
+.debug-effect-buttons button {
+	background: rgba(0, 0, 0, 0.8);
+	color: #0f0;
+	border: 1px solid #0f0;
+	padding: 8px 10px;
+	font-family: monospace;
+	font-size: 12px;
+	cursor: pointer;
+	border-radius: 3px;
+	transition: all 0.15s ease;
+}
+
+.debug-effect-buttons button:hover {
+	background: rgba(0, 255, 0, 0.15);
+}
+
+.debug-effect-buttons button.active {
+	background: rgba(0, 255, 0, 0.3);
+	border-color: #0f0;
+	color: #fff;
+}
+
+.debug-scene-buttons {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.debug-scene-buttons button {
+	background: rgba(0, 0, 0, 0.8);
+	color: #0f0;
+	border: 1px solid #0f0;
+	padding: 8px 14px;
+	font-family: monospace;
+	font-size: 13px;
+	cursor: pointer;
+	border-radius: 3px;
+	transition: background 0.15s ease;
+}
+
+.debug-scene-buttons button:hover {
+	background: rgba(0, 255, 0, 0.15);
+}
+
+.debug-section {
+	font-family: monospace;
+	font-size: 12px;
+	color: #0f0;
+	background: rgba(0, 0, 0, 0.75);
+	padding: 8px 12px;
+	border: 1px solid #0f0;
+	border-radius: 4px;
+}
+
+.debug-section-title {
+	font-weight: bold;
+	margin-bottom: 4px;
+	border-bottom: 1px solid #0f03;
+	padding-bottom: 2px;
+}
+
+.debug-row {
+	line-height: 1.5;
+	word-wrap: break-word;
+}
+
+.debug-buttons-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-top: 4px;
+}
+
+.debug-buttons-row button {
+	background: rgba(0, 0, 0, 0.8);
+	color: #0f0;
+	border: 1px solid #0f0;
+	padding: 4px 8px;
+	font-family: monospace;
+	font-size: 11px;
+	cursor: pointer;
+	border-radius: 3px;
+	transition: all 0.15s ease;
+}
+
+.debug-buttons-row button:hover {
+	background: rgba(0, 255, 0, 0.15);
+}
+
+.debug-buttons-row button.active {
+	background: rgba(0, 255, 0, 0.3);
+	border-color: #0f0;
+	color: #fff;
+}
+
+.debug-section select {
+	background: rgba(0, 0, 0, 0.8);
+	color: #0f0;
+	border: 1px solid #0f0;
+	padding: 2px 6px;
+	font-family: monospace;
+	font-size: 11px;
+	border-radius: 3px;
+	margin-left: 8px;
+}
+
+.stat-indicators {
+	position: fixed;
+	top: 20%;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 50;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	pointer-events: none;
+}
+
+.stat-indicator {
+	font-size: 0.9rem;
+	font-style: italic;
+	opacity: 0.8;
+	animation: fadeIn 0.3s ease;
+}
+
+.meta-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 200;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: auto;
+}
+
+.reality-dim-overlay {
+	position: absolute;
+	inset: 0;
+	background: #000;
+	z-index: 1;
+	animation: dimFadeIn 1s ease forwards;
+}
+
+@keyframes dimFadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.reality-overlay {
+	background: transparent;
+}
+
+.reality-content {
+	position: relative;
+	z-index: 2;
+	max-width: 600px;
+	text-align: center;
+	padding: 2rem;
+}
+
+.reality-line {
+	font-size: 1.4rem;
+	line-height: 1.6;
+	margin-bottom: 1rem;
+	animation: metaFadeIn 0.8s ease;
+}
+
+.reality-sub {
+	font-size: 1rem;
+	opacity: 0.7;
+	line-height: 1.6;
+	margin-bottom: 2rem;
+	animation: metaFadeIn 0.8s ease;
+}
+
+.meta-continue-btn {
+	background: transparent;
+	border: 1px solid #888;
+	color: #ccc;
+	padding: 0.75rem 2rem;
+	font-size: 1rem;
+	cursor: pointer;
+	border-radius: 4px;
+	transition: all 0.3s ease;
+	animation: metaFadeIn 0.5s ease;
+}
+
+.meta-continue-btn:hover {
+	border-color: #fff;
+	color: #fff;
+}
+
+.stats-overlay {
+	background: rgba(0, 0, 0, 0.85);
+}
+
+.stats-content {
+	max-width: 550px;
+	text-align: center;
+	padding: 2rem;
+}
+
+.stats-line {
+	font-size: 1.2rem;
+	line-height: 1.6;
+	margin-bottom: 1rem;
+	animation: metaFadeIn 0.6s ease;
+}
+
+.stats-line strong {
+	color: var(--color-accent);
+	font-weight: 500;
+}
+
+.facts-overlay {
+	background: var(--color-bg);
+	color: var(--color-accent);
+}
+
+.facts-content {
+	max-width: 550px;
+	text-align: center;
+	padding: 2rem;
+}
+
+.fact-text {
+	font-size: 1.2rem;
+	line-height: 1.6;
+	font-weight: 400;
+	animation: metaFadeIn 0.5s ease;
+}
+
+.fact-footer {
+	font-size: 1rem;
+	margin-top: 1.5rem;
+	animation: metaFadeIn 0.5s ease;
+}
+
+.facts-overlay .meta-continue-btn {
+	border-color: var(--color-accent);
+	color: var(--color-accent);
+	margin-top: 2rem;
+}
+
+.facts-overlay .meta-continue-btn:hover {
+	border-color: var(--color-accent-hover);
+	color: var(--color-accent-hover);
+}
+
+@keyframes metaFadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (max-width: 1024px) {
+	.story-container {
+		width: 85%;
+	}
+	.choices-container {
+		width: 85%;
+	}
+}
+
+@media (max-width: 768px) {
+	.app {
+		overflow-y: auto;
+	}
+	.story-container {
+		width: 92%;
+	}
+	.choices-container {
+		width: 92%;
+	}
+	.choices-grid {
+		grid-template-columns: 1fr;
+	}
+	.choice-text {
+		white-space: normal;
+	}
+	.choices-grid button {
+		padding: 12px 10px;
+		font-size: 14px;
+		max-width: 250px;
+	}
+}
+
+.reflection-left::-webkit-scrollbar {
+	width: 6px;
+}
+
+.reflection-left::-webkit-scrollbar-track {
+	background: #000;
+}
+
+.reflection-left::-webkit-scrollbar-thumb {
+	background: #333;
+	border-radius: 4px;
+}
