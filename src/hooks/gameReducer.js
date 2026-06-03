@@ -11,7 +11,6 @@ const initialOverrides = {
   choiceFade: 0,
   disappearChance: 0,
   inputDelay: 0,
-  autoScroll: false,
 };
 
 export const initialState = {

@@ -61,7 +61,6 @@ export default function DebugPanel({
         <div className="debug-row">
           choiceFade:{getEffects(state, profile).choiceFade?.toFixed(1) || 0}
           {' | '}choiceStability:{getEffects(state, profile).choiceStability?.toFixed(1) || 1}
-          {' | '}autoScroll:{String(getEffects(state, profile).autoScroll)}
         </div>
         <div className="debug-row">
           disappearChance:{getEffects(state, profile).disappearChance?.toFixed(2) || 0}
@@ -88,7 +87,6 @@ export default function DebugPanel({
         <div className="debug-row">
           choiceFade:{effects.choiceFade?.toFixed(1)}
           {' | '}choiceStability:{effects.choiceStability?.toFixed(1)}
-          {' | '}autoScroll:{String(effects.autoScroll)}
         </div>
         <div className="debug-row">
           disappearChance:{effects.disappearChance?.toFixed(2)}
@@ -161,12 +159,6 @@ export default function DebugPanel({
             onClick={() => toggleEffect("inputDelay", [0, 250, 500, 800])}
           >
             InputDelay: {manualOverrides.inputDelay}
-          </button>
-          <button
-            className={manualOverrides.autoScroll ? "active" : ""}
-            onClick={() => toggleEffect("autoScroll", [false, true])}
-          >
-            AutoScroll: {String(manualOverrides.autoScroll)}
           </button>
           <button
             className={manualOverrides.sleepiness > 0 ? "active" : ""}

@@ -94,7 +94,7 @@ Dynamically injects extra dialogue lines based on player stats (e.g., `"You've b
 
 | Stat | Initial | Effect when high |
 |---|---|---|
-| `time_loss` | 0 | Blur, darkness, memory decay, auto-scroll, text jitter |
+| `time_loss` | 0 | Blur, darkness, memory decay, text jitter |
 | `tension` | 0 | Screen shake, visual noise, drift, pulse speed, red shift |
 | `awareness` | 5 | Unlocks clarity; low → high memory decay |
 | `resistance` | 3 | Prevents auto-select and choice overriding |
@@ -187,13 +187,13 @@ The effects system translates the 4 hidden stats into escalating UI/UX distortio
 
 `getSimulationProfile(state)` selects one of 5 profiles based on stat thresholds:
 
-| Profile | Threshold | textSpeed | blur | textJitter | inputDelay | choiceFade | choiceStability | disappearChance | autoScroll |
+| Profile | Threshold | textSpeed | blur | textJitter | inputDelay | choiceFade | choiceStability | disappearChance |
 |---|---|---|---|---|---|---|---|---|---|
-| **neutral** | (default) | 1.0x | 0 | 0 | 0ms | 0 | 1.0 | 0% | false |
-| **deep_scroll** | `time_loss>12 && awareness<3` | 1.3x | 3 | 0.5 | 250ms | 0.3 | 0.6 | 20% | true |
-| **aware_loop** | `time_loss>10 && awareness>=4` | 1.1x | 1 | 0.3 | 350ms | 0.2 | 0.7 | 10% | false |
-| **breaking** | `resistance>8 && awareness>=5` | 0.9x | 0 | 0 | 0ms | 0 | 1.0 | 0% | false |
-| **uneasy** | `tension>6` | 1.0x | 1 | 0.2 | 150ms | 0.1 | 0.85 | 5% | false |
+| **neutral** | (default) | 1.0x | 0 | 0 | 0ms | 0 | 1.0 | 0% |
+| **deep_scroll** | `time_loss>12 && awareness<3` | 1.3x | 3 | 0.5 | 250ms | 0.3 | 0.6 | 20% |
+| **aware_loop** | `time_loss>10 && awareness>=4` | 1.1x | 1 | 0.3 | 350ms | 0.2 | 0.7 | 10% |
+| **breaking** | `resistance>8 && awareness>=5` | 0.9x | 0 | 0 | 0ms | 0 | 1.0 | 0% |
+| **uneasy** | `tension>6` | 1.0x | 1 | 0.2 | 150ms | 0.1 | 0.85 | 5% |
 
 Each parameter affects the UI as follows:
 
@@ -206,7 +206,6 @@ Each parameter affects the UI as follows:
 | `choiceFade` | ChoiceList | Opacity reduction on visible choices |
 | `choiceStability` | ChoiceList | Probability each choice stays visible on mount |
 | `disappearChance` | ChoiceList | Per-choice probability of vanishing after 1s |
-| `autoScroll` | App | `window.scrollBy(0, 1)` every 50ms |
 
 ### Layer 2 — Scene-Specific Overrides
 
@@ -215,9 +214,7 @@ Each parameter affects the UI as follows:
 | Scene | Override |
 |---|---|
 | `scene3_scroll` | `blur: 1, choiceFade: 0.1` |
-| `scene3_resist` | `autoScroll: false` |
 | `scene4_loop` | `blur: 2, inputDelay: 200` |
-| `scene4_reflect` | `autoScroll: false` |
 | `scene6_awareness` | `blur: 3, textJitter: 0.4, disappearChance: 0.15` |
 | `scene7` | `inputDelay: 400, textJitter: 0.2` |
 | `scene8` | `disappearChance: 0.3, inputDelay: 500` |

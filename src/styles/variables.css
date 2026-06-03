@@ -1,7 +1,55 @@
 :root {
+	/* Colors */
 	--color-bg: #050403;
 	--color-text: #eaeaea;
+	--color-text-secondary: #8a8a8a;
 	--color-accent: #cd5909;
 	--color-accent-hover: #b04e08;
+	--color-accent-active: #8f3d06;
+	--color-border: rgba(234, 234, 234, 0.12);
+
+	/* Buttons - Primary */
+	--color-btn-primary-bg: var(--color-accent);
+	--color-btn-primary-text: #ffffff;
+	--color-btn-primary-hover-bg: var(--color-accent-hover);
+	--color-btn-primary-active-bg: #8f3d06;
+	--color-btn-primary-disabled-bg: rgba(205, 89, 9, 0.35);
+	--color-btn-primary-disabled-text: rgba(255, 255, 255, 0.5);
+
+	/* Buttons - Secondary (outline) */
+	--color-btn-secondary-border: var(--color-accent);
+	--color-btn-secondary-text: var(--color-accent);
+	--color-btn-secondary-hover-bg: rgba(205, 89, 9, 0.1);
+	--color-btn-secondary-active-bg: rgba(205, 89, 9, 0.2);
+	--color-btn-secondary-disabled-border: rgba(205, 89, 9, 0.35);
+	--color-btn-secondary-disabled-text: rgba(205, 89, 9, 0.35);
+
+	/* Buttons - Ghost */
+	--color-btn-ghost-text: var(--color-accent);
+	--color-btn-ghost-hover-bg: rgba(205, 89, 9, 0.08);
+	--color-btn-ghost-active-bg: rgba(205, 89, 9, 0.15);
+	--color-btn-ghost-disabled-text: rgba(205, 89, 9, 0.35);
+
+	/* Typography */
 	--font-sans: "Montserrat", sans-serif;
+	--font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+	/* Border Radius */
+	--radius-sm: 4px;
+	--radius-md: 6px;
+	--radius-lg: 8px;
+
+	/* Spacing */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-8: 32px;
+	--space-10: 40px;
+	--space-12: 48px;
+	--space-15: 60px;
+	--space-20: 80px;
+	--space-25: 100px;
 }

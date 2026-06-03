@@ -8,7 +8,6 @@ const simulationProfiles = {
 		choiceFade: 0,
 		choiceStability: 1,
 		disappearChance: 0,
-		autoScroll: false,
 	},
 	deep_scroll: {
 		textSpeed: 1.3,
@@ -18,7 +17,6 @@ const simulationProfiles = {
 		choiceFade: 0.3,
 		choiceStability: 0.6,
 		disappearChance: 0,
-		autoScroll: true,
 	},
 	aware_loop: {
 		textSpeed: 1.1,
@@ -28,7 +26,6 @@ const simulationProfiles = {
 		choiceFade: 0.2,
 		choiceStability: 0.7,
 		disappearChance: 0,
-		autoScroll: false,
 	},
 	breaking: {
 		textSpeed: 0.9,
@@ -38,7 +35,6 @@ const simulationProfiles = {
 		choiceFade: 0,
 		choiceStability: 1,
 		disappearChance: 0,
-		autoScroll: false,
 	},
 	uneasy: {
 		textSpeed: 1,
@@ -48,7 +44,6 @@ const simulationProfiles = {
 		choiceFade: 0.1,
 		choiceStability: 0.85,
 		disappearChance: 0,
-		autoScroll: false,
 	},
 };
 
@@ -60,22 +55,13 @@ const sceneEffects = {
 			choiceFade: 0.1,
 		},
 	},
-	scene3_resist: {
-		override: {
-			autoScroll: false,
-		},
-	},
 	scene4_loop: {
 		override: {
 			blur: 2,
 			inputDelay: 200,
 		},
 	},
-	scene4_reflect: {
-		override: {
-			autoScroll: false,
-		},
-	},
+
 	scene6_awareness: {
 		override: {
 			blur: 3,
@@ -144,8 +130,6 @@ export function getEffects(state, forcedProfile = null) {
 		choiceFade: merged.choiceFade || 0,
 		choiceStability: sim.choiceStability, // Keep legacy choiceStability
 		disappearChance: merged.disappearChance || 0,
-		autoScroll: merged.autoScroll,
-
 		// Legacy effects
 		choiceInstability: t > 3,
 		sleepiness: Math.min(Math.pow(t, 1.2) * 0.05, 0.75),

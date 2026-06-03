@@ -215,8 +215,6 @@ After every choice, reaction time is analyzed:
 
 #### scene3_resist
 **Lines:** "The room feels strangely quiet." / "Too quiet." / "Without distraction, everything becomes noticeable again." / "Reaching for the phone suddenly feels easier than sitting here."
-**Scene override:** autoScroll = false
-
 | Choice | Effects | Next |
 |--------|---------|------|
 | "Check something quickly" | `time_loss +2` | `scene4_loop` |
@@ -241,7 +239,6 @@ After every choice, reaction time is analyzed:
 
 #### scene4_reflect
 **Lines:** "You stop moving for a moment." / "The silence feels unfamiliar." / "You suddenly become aware of your body again." / "Your posture." / "Your eyes burning slightly." / "You don't remember how long you've been sitting here."
-**Scene override:** autoScroll = false
 
 | Choice | Effects | Next |
 |--------|---------|------|
@@ -357,13 +354,13 @@ Additional lines injected based on player state:
 
 Stats are mapped to 5 profiles that alter the UI experience:
 
-| Profile | Threshold | textSpeed | blur | jitter | inputDelay | choiceFade | choiceStability | autoScroll |
-|---------|-----------|-----------|------|--------|------------|------------|-----------------|------------|
-| neutral | (default) | 1.0× | 0 | 0 | 0ms | 0 | 1.0 | ❌ |
-| deep_scroll | time_loss > 12 AND awareness < 3 | 1.3× | 3 | 0.5 | 250ms | 0.3 | 0.6 | ✅ |
-| aware_loop | time_loss > 10 AND awareness >= 4 | 1.1× | 1 | 0.3 | 350ms | 0.2 | 0.7 | ❌ |
-| breaking | resistance > 8 AND awareness >= 5 | 0.9× | 0 | 0 | 0ms | 0 | 1.0 | ❌ |
-| uneasy | tension > 6 | 1.0× | 1 | 0.2 | 150ms | 0.1 | 0.85 | ❌ |
+| Profile | Threshold | textSpeed | blur | jitter | inputDelay | choiceFade | choiceStability |
+|---------|-----------|-----------|------|--------|------------|------------|-----------------|
+| neutral | (default) | 1.0× | 0 | 0 | 0ms | 0 | 1.0 |
+| deep_scroll | time_loss > 12 AND awareness < 3 | 1.3× | 3 | 0.5 | 250ms | 0.3 | 0.6 |
+| aware_loop | time_loss > 10 AND awareness >= 4 | 1.1× | 1 | 0.3 | 350ms | 0.2 | 0.7 |
+| breaking | resistance > 8 AND awareness >= 5 | 0.9× | 0 | 0 | 0ms | 0 | 1.0 |
+| uneasy | tension > 6 | 1.0× | 1 | 0.2 | 150ms | 0.1 | 0.85 |
 
 ### Cumulative Derived Effects
 
@@ -387,9 +384,7 @@ Beyond the profile, raw stats produce additional effects:
 | Scene | Overrides |
 |-------|-----------|
 | scene3_scroll | blur +1, choiceFade +0.1 |
-| scene3_resist | autoScroll = false |
 | scene4_loop | blur +2, inputDelay +200 |
-| scene4_reflect | autoScroll = false |
 | scene6_awareness | blur +3, textJitter +0.4 |
 | scene7 | inputDelay +400, textJitter +0.2 |
 | scene8 | inputDelay +500 |
@@ -663,7 +658,7 @@ Fetches from `GET /api/results/stats`. Expected response:
 ┌─────────────────────────────────────┐
 │         UI EXPERIENCE               │
 │  blur · jitter · shake · noise      │
-│  textSpeed · inputDelay · autoScroll│
+│  textSpeed · inputDelay                   │
 │  memoryDecay · timeJump · drift     │
 │  choiceFade · choiceStability       │
 └─────────────────────────────────────┘

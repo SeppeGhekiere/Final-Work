@@ -15,8 +15,6 @@ const SCENE_KEYS = Object.keys(scenes);
 export function useGameEngine() {
   const [game, dispatch] = useReducer(gameReducer, initialState);
   const myceliumRef = useRef(null);
-  const autoScrollRef = useRef(null);
-
   const {
     isDialogueFinished,
     rerenderKey,
@@ -46,10 +44,6 @@ export function useGameEngine() {
   );
 
   useEffect(() => {
-    if (autoScrollRef.current) {
-      clearInterval(autoScrollRef.current);
-      autoScrollRef.current = null;
-    }
     window.scrollTo(0, 0);
     onSceneEnter();
 
@@ -57,24 +51,6 @@ export function useGameEngine() {
       dispatch({ type: "TRIGGER_REALITY_CHECK" });
     }
   }, [rerenderKey]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (effects.autoScroll && !autoScrollRef.current) {
-      autoScrollRef.current = setInterval(() => {
-        window.scrollBy(0, 1);
-      }, 50);
-    } else if (!effects.autoScroll && autoScrollRef.current) {
-      clearInterval(autoScrollRef.current);
-      autoScrollRef.current = null;
-    }
-
-    return () => {
-      if (autoScrollRef.current) {
-        clearInterval(autoScrollRef.current);
-        autoScrollRef.current = null;
-      }
-    };
-  }, [effects.autoScroll, rerenderKey]);
 
   useEffect(() => {
     if (prevMetaState === "final" && metaState === null) {
@@ -176,7 +152,6 @@ export function useGameEngine() {
     statIndicators,
     manualOverrides,
     forcedProfile,
-    autoScrollRef,
     myceliumRef,
     handleDialogueFinish,
     handleChoice,

@@ -34,6 +34,5 @@ export function mergeEffects(computedEffects, manualOverrides) {
     choiceFade: computedEffects.choiceFade + (manualOverrides.choiceFade || 0),
     disappearChance: computedEffects.disappearChance + (manualOverrides.disappearChance || 0),
     inputDelay: computedEffects.inputDelay + (manualOverrides.inputDelay || 0),
-    autoScroll: computedEffects.autoScroll || manualOverrides.autoScroll,
   };
 }
