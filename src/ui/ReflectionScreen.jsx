@@ -256,27 +256,7 @@ export default function ReflectionScreen({ onRestart, onClose, onGoBack }) {
 				>
 					Restart experience
 				</button>
-				<button
-					onClick={() =>
-						window.open(
-							"https://docs.google.com/forms/d/e/1FAIpQLSdRME4j6yCDipjKoiHAezIJRmixouqu1KpwJ7cZcpipXT2RaQ/viewform?usp=publish-editor",
-							"_blank",
-						)
-					}
-					style={{
-						padding: "0.75rem 2rem",
-						fontSize: "1rem",
-						cursor: "pointer",
-						background: "var(--color-accent)",
-						border: "1px solid var(--color-accent)",
-						color: "#fff",
-						borderRadius: "4px",
-						width: isMobile ? "100%" : undefined,
-						textAlign: "center",
-					}}
-				>
-					Fill out survey
-				</button>
+
 			</div>
 		</div>
 	);
