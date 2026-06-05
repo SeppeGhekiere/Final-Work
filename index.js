@@ -6,10 +6,8 @@ app.use(express.json());
 
 app.use((req, res, next) => {
 	const start = Date.now();
-
 	res.on("finish", () => {
 		const duration = Date.now() - start;
-
 		console.log(`[API] ${req.method} ${req.url} - ${res.statusCode} - ${duration}ms`);
 	});
 
@@ -17,57 +15,22 @@ app.use((req, res, next) => {
 });
 
 // ─────────────────────────────
-// LOGGING
+// ROUTER (mounted at / and /api)
 // ─────────────────────────────
-app.post("/log", (req, res) => {
+const router = express.Router();
+
+// LOGGING
+router.post("/log", (req, res) => {
 	const data = {
 		time: new Date().toISOString(),
 		body: req.body,
 	};
-
 	fs.appendFileSync("logs.json", JSON.stringify(data) + "\n");
-
 	res.send({ status: "ok" });
 });
 
-// ─────────────────────────────
-// SESSION TRACKING
-// ─────────────────────────────
-const sessions = new Map();
-// sessionId → lastSeen
-
-app.post("/heartbeat", (req, res) => {
-	const { sessionId } = req.body;
-
-	if (!sessionId) return res.status(400).send("missing sessionId");
-
-	sessions.set(sessionId, Date.now());
-
-	res.json({ ok: true });
-});
-
-// cleanup stale sessions
-setInterval(() => {
-	const now = Date.now();
-
-	for (const [id, lastSeen] of sessions.entries()) {
-		if (now - lastSeen > 30000) {
-			sessions.delete(id);
-		}
-	}
-}, 10000);
-
-// ─────────────────────────────
-// ACTIVE USERS (REAL SESSIONS)
-// ─────────────────────────────
-app.get("/active-users", (req, res) => {
-	res.json({ active: sessions.size });
-});
-
-// ─────────────────────────────
 // STATS
-// ─────────────────────────────
-app.get("/stats", (req, res) => {
+router.get("/stats", (req, res) => {
 	const raw = fs.readFileSync("logs.json", "utf-8").trim();
 
 	if (!raw) {
@@ -83,7 +46,6 @@ app.get("/stats", (req, res) => {
 		.split("\n")
 		.filter(Boolean)
 		.map((line) => JSON.parse(line));
-
 	const totalEvents = logs.length;
 	const choiceCounts = {};
 	const sceneCounts = {};
@@ -92,15 +54,8 @@ app.get("/stats", (req, res) => {
 
 	for (const entry of logs) {
 		const { body } = entry;
-
-		if (body.choice) {
-			choiceCounts[body.choice] = (choiceCounts[body.choice] || 0) + 1;
-		}
-
-		if (body.scene) {
-			sceneCounts[body.scene] = (sceneCounts[body.scene] || 0) + 1;
-		}
-
+		if (body.choice) choiceCounts[body.choice] = (choiceCounts[body.choice] || 0) + 1;
+		if (body.scene) sceneCounts[body.scene] = (sceneCounts[body.scene] || 0) + 1;
 		if (body.reactionTime != null) {
 			totalReactionTime += body.reactionTime;
 			reactionCount++;
@@ -121,12 +76,98 @@ app.get("/stats", (req, res) => {
 	});
 });
 
-// ─────────────────────────────
+// RESULTS / AGGREGATED STATS
+function getEndingFromState(state) {
+	if (!state) return "endingB";
+	if (state.time_loss >= 12 && state.awareness <= 3) return "endingA";
+	if (state.time_loss >= 10 && state.awareness >= 5) return "endingB";
+	if (state.resistance >= 8 && state.awareness >= 5) return "endingC";
+	if (state.tension >= 6) return "endingD";
+	return "endingB";
+}
+
+router.get("/results/stats", (req, res) => {
+	const raw = fs.readFileSync("logs.json", "utf-8").trim();
+
+	if (!raw) {
+		const empty = { totalSessions: 0, topEnding: null, choiceMatchPercent: null, endingPercent: null, endingDistribution: {} };
+		return res.json(empty);
+	}
+
+	const logs = raw
+		.split("\n")
+		.filter(Boolean)
+		.map((line) => JSON.parse(line));
+
+	const choiceEvents = logs.filter((entry) => entry.body && entry.body.scene && entry.body.choice && entry.body.state);
+
+	const sessionMap = new Map();
+	for (const entry of choiceEvents) {
+		const sid = entry.body.sessionId;
+		if (!sid) continue;
+		if (!sessionMap.has(sid)) sessionMap.set(sid, []);
+		sessionMap.get(sid).push(entry.body);
+	}
+
+	const totalSessions = sessionMap.size;
+	const endingCounts = {};
+	for (const events of sessionMap.values()) {
+		events.sort((a, b) => a.timestamp - b.timestamp);
+		const ending = getEndingFromState(events[events.length - 1].state);
+		endingCounts[ending] = (endingCounts[ending] || 0) + 1;
+	}
+
+	let topEnding = null;
+	let topCount = 0;
+	for (const [ending, count] of Object.entries(endingCounts)) {
+		if (count > topCount) {
+			topCount = count;
+			topEnding = ending;
+		}
+	}
+
+	let totalMatchRate = 0;
+	let sessionCount = 0;
+	const sessionsList = [...sessionMap.values()];
+
+	for (let i = 0; i < sessionsList.length; i++) {
+		const choicesA = new Set(sessionsList[i].map((e) => e.choice));
+		if (choicesA.size === 0) continue;
+		let matchCount = 0;
+		for (const choice of choicesA) {
+			const foundElsewhere = sessionsList.some((other, j) => {
+				if (i === j) return false;
+				return other.some((e) => e.choice === choice);
+			});
+			if (foundElsewhere) matchCount++;
+		}
+		totalMatchRate += matchCount / choicesA.size;
+		sessionCount++;
+	}
+
+	const choiceMatchPercent = totalSessions > 1 && sessionCount > 0 ? Math.round((totalMatchRate / sessionCount) * 100) : null;
+
+	const endingPercent = topEnding && totalSessions > 0 ? Math.round(((endingCounts[topEnding] || 0) / totalSessions) * 100) : null;
+
+	const result = {
+		totalSessions,
+		topEnding,
+		choiceMatchPercent,
+		endingPercent,
+		endingDistribution: endingCounts,
+	};
+	res.json(result);
+});
 // HEALTH
-// ─────────────────────────────
-app.get("/health", (req, res) => {
+router.get("/health", (req, res) => {
 	res.send("backend running");
 });
+
+// ─────────────────────────────
+// MOUNT — works at / and /api
+// ─────────────────────────────
+app.use(router);
+app.use("/api", router);
 
 // ─────────────────────────────
 // START
