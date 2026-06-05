@@ -60,11 +60,7 @@ export default function AudioPrompt({ onContinue }) {
             padding: "12px 64px",
             fontSize: "1rem",
             cursor: "pointer",
-            background: "#cd5909",
-            border: "none",
-            color: "#fff",
             borderRadius: "6px",
-            transition: "background 0.2s",
             textTransform: "uppercase",
             letterSpacing: "0.1em",
             fontWeight: "600"

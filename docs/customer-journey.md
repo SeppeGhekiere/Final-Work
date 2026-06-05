@@ -55,7 +55,6 @@ The entry point to the experience. A landing page with:
 
 On first story enter:
 - `sessionId` generated via `crypto.randomUUID()`, stored in `localStorage`
-- Heartbeat POST to `/api/heartbeat` every 10 seconds
 - Ambient room sound starts on first click (`playRoomSound`)
 - Audio context initialized
 

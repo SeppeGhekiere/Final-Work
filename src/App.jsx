@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { useGameEngine } from "./hooks/useGameEngine";
-import { useHeartbeat } from "./hooks/useHeartbeat";
 import { useAudioInit } from "./hooks/useAudioInit";
 import { useKeyboardShortcut } from "./hooks/useKeyboardShortcut";
 
@@ -20,7 +19,6 @@ export default function App() {
   const [showDebug, setShowDebug] = useState(false);
   const [showGoodbye, setShowGoodbye] = useState(false);
 
-  useHeartbeat();
   useAudioInit();
   useKeyboardShortcut("p", () => setShowDebug((prev) => !prev));
 

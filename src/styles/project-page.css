@@ -69,14 +69,16 @@
 	letter-spacing: -0.015em;
 	color: #ffffff;
 	background-color: var(--color-accent);
-	border: none;
+	border: 1px solid transparent;
 	border-radius: 6px;
 	cursor: pointer;
-	transition: background-color 0.2s;
+	transition: all 0.2s;
 }
 
 .project-begin-btn:hover {
-	background-color: var(--color-accent-hover);
+	background: transparent;
+	border-color: var(--color-accent);
+	color: var(--color-accent);
 }
 
 @media (max-width: 768px) {
